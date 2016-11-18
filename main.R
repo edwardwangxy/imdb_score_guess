@@ -7,6 +7,8 @@ library(tm)
 library(wordcloud)
 library(XML)
 
+
+#########################################################################
 #selecing subset from dataset
 set_review_num = 500
 imdb_data <- read.csv("movie_metadata.csv")
@@ -25,6 +27,8 @@ for(i in 2:9)
 }
 close(pb)
 
+
+#########################################################################
 #start achieving all reviews for each score level
 dict_save_location <- "dictionary"
 source("imdb_review_scraping_func.R")
@@ -32,7 +36,7 @@ pages_each_movie = 50
 max_movies_pick = 50
 total_movie_count = 0
 progress_bar_counting = 0
-for(t in 2:9)
+for(n in 2:9)
 {
   link_list_name = paste("imdb_score_",n,sep="")
   total_movie_count = total_movie_count + min(nrow(get(link_list_name)),max_movies_pick)
@@ -62,12 +66,17 @@ close(pb2)
 rawdata_name <- sprintf("rawdata%s%s.Rda",substring(Sys.time(),12,13),substring(Sys.time(),15,16))
 save(list = raw_save_list,file=sprintf("%s/rawdata/%s", dict_save_location,rawdata_name))
 
+
+#########################################################################
 #create term table for different scores and save to dictionary
 source("imdb_score_clean_func.R")
 source("imdb_score_term_func.R")
+
+K_input = 50
+
 dictionary_name <- sprintf("dict%s%s.Rda",substring(Sys.time(),12,13),substring(Sys.time(),15,16))
 dict_save_location <- "dictionary"
-K_input = 50
+
 pb3 <- txtProgressBar(min = 0, max = 9, char = "=", style = 3)
 objects_name_to_save = c(NULL)
 for(i in 2:9)
@@ -83,15 +92,16 @@ for(i in 2:9)
 }
 close(pb3)
 save(list = objects_name_to_save,file=sprintf("%s/%s", dict_save_location,dictionary_name))
+
+#########################################################################
 #start guessing the score
 source("imdb_guess_review_func.R")
-test_web_url = "http://www.imdb.com/title/tt1211837/?pf_rd_m=A2FGELUUNOQJNL&pf_rd_p=2240084082&pf_rd_r=1VGTP0PDM2J06YZFWVAN&pf_rd_s=center-1&pf_rd_t=15506&pf_rd_i=moviemeter&ref_=chtmvm_tt_1" #<westword> imdb_url
-grab_pages = 50
+test_web_url = "http://www.imdb.com/title/tt2496468/?ref_=fn_al_tt_1" #<westword> imdb_url
+grab_pages = 70
 review_prob = c(NULL)
 try_score_review = myimdb.rangereviews(test_web_url, grab_pages)
 for(i in 2:9)
 {
-  i=9
   term_name = paste("score_",i,"_term",sep="")
   review_term_prob = guess_imdb_review_score(try_score_review, get(term_name))
   review_prob = c(review_prob,review_term_prob)
