@@ -50,7 +50,8 @@ for(n in 2:9)
 close(pb2)
 
 #create term table for different score
-source("imdb_review_term_func.R")
+source("imdb_score_clean_func.R")
+source("imdb_score_term_func.R")
 
 K_input = 30
 pb3 <- txtProgressBar(min = 0, max = 9, char = "=", style = 3)
