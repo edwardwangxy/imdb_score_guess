@@ -1,9 +1,9 @@
-library(rvest)
-library(RColorBrewer)
-library(SnowballC)
-library(tm)
-library(wordcloud)
-library(XML)
+require(rvest)
+require(RColorBrewer)
+require(SnowballC)
+require(tm)
+require(wordcloud)
+require(XML)
 
 myimdb.reviews <- function(web_url, filter = "best", page = 1)
 {
@@ -19,11 +19,14 @@ myimdb.reviews <- function(web_url, filter = "best", page = 1)
 
 myimdb.rangereviews <- function(weburl_r, range, filter_r = "best", start = 1)
 {
+  #pb <- txtProgressBar(min = 0, max = range, char = "=", style = 3)
   first <- myimdb.reviews(weburl_r, filter = filter_r, page = start)
   for(i in (start+1):range)
   {
     addup = myimdb.reviews(weburl_r, filter = filter_r, page = i)
     first = c(first, addup)
+ #   setTxtProgressBar(pb, i)
   }
+ # close(pb)
   return(first)
 }
