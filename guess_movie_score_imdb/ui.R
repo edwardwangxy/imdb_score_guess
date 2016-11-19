@@ -13,37 +13,35 @@ shinyUI(
     dashboardSidebar(
       fluidPage(
         
-        selectInput('rawdata', 'Pick Data', c("rawdata-2-2.Rda","rawdata-5-5.Rda"),
-                    selected=names(airquality)[[4]]),
-        selectInput('xvar', 'Pick Length', names(airquality)[c(5,6)],
-                    selected=names(airquality)[[6]]),
-        # actionButton('select2', 'Select the above variables.'),
-        selectInput('xcol', 'X Variable', names(airquality)[-c(5,6)],
-                    selected=names(airquality)[[1]]),
-        selectInput('ycol', 'Y Variable', names(airquality)[-c(5,6)],
-                    selected=names(airquality)[[2]]),
-        # actionButton('select2', 'Select the above variables.'),
-        sliderInput("subsample", label = "Size of random samples",
-                    min = 10, max = 90, value = 30, step = 10),
-        actionButton('resetSelection',
-                     label = "Click to reset row selection"
-        ), # end of action button
-        selectInput('sortvar', 'Sort Data', names(airquality)[-c(5,6)],
-                    selected=names(airquality)[[4]]),
-        actionButton('act_sort',
-                     label = "Click to insertion sort data"
-        ) # end of action button
+        selectInput('rawdata', 'Pick Data', c("rawdata-10-10.Rda","rawdata-5-5.Rda"),
+                    selected="rawdata-10-10.Rda"),
+        
+        sliderInput("plot_sample_score", label = "choose a Score to plot",
+                    min = 2, max = 9, value = 2, step = 1),
+        
+        sliderInput("k_term", label = "choose # of terms",
+                    min = 10, max = 80, value = 50, step = 10),
+        
+        sliderInput("pages_to_guess", label = "review pages for guessing",
+                    min = 10, max = 80, value = 50, step = 10),
+        
+        textInput("search_movie", "Search a movie", 
+                  placeholder = "enter movie name"),
+        
+        actionButton('search_btn',
+                     label = "Search")
+        
+###########################################################################
 
       )
     ),
     dashboardBody(
       # Boxes need to be put in a row (or column)
       fluidRow(
-        box(column(12,plotOutput("plot1"))),
-        box(column(12, h1('select rows'),DT::dataTableOutput('x1'))),
-        box(column(12,plotOutput('x2'))),
-        box(column(12, h1('Raw Infos'),verbatimTextOutput('info'))),
-        box(column(12, h1('Insertion Sort'),verbatimTextOutput("sort")))
+        box(column(12,h1('Term plot'),plotOutput("plot1"))),
+        box(column(12, h1('Search Result'),DT::dataTableOutput('x1'))),
+        box(column(12,h1('Guess plot'),plotOutput("plot2"))),
+        box(column(12, h1('Computer Guess'),verbatimTextOutput('info')))
       )
     )
   ))

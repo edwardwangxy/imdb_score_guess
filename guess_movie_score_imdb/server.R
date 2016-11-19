@@ -1,106 +1,102 @@
 shinyServer(
   function(input, output) {
+    source("my_wordcloud_func.R")
+    source("imdb_review_scraping_func.R")
+    source("imdb_score_clean_func.R")
+    source("imdb_score_term_func.R")
+    source("imdb_guess_review_func.R")
+    
+    ###############################################################
     output$plot1 <- renderPlot({
-      if(input$xvar == "Day"){
-        temp_date = c(1:153)
-        temp_data_day = data.frame(temp_date, airquality[input$yvar])
-        clean_data_day = temp_data_day[complete.cases(temp_data_day),]
-        colnames(clean_data_day) <- c("day","data")
-        plot(clean_data_day,xlab="Day",ylab=input$yvar)
-        lines(clean_data_day)
-      }else{
-        month_factor <- as.factor(airquality$Month)
-        temp_data_month = data.frame(month_factor, airquality[input$yvar])
-        clean_data_month = temp_data_month[complete.cases(temp_data_month),]
-        colnames(clean_data_month) <- c("month","data")
-        sum_data_month <- ddply(clean_data_month, .(month), summarize, mean=mean(data))
-        plot(sum_data_month,xlab="Month",ylab=input$yvar)
-        lines(sum_data_month)
-      }
-    })
-  
-    
-    selectedData <- 
-      #airquality[,c(input$xcol,input$ycol)]
-      reactive({
-        airquality[, c(input$xcol, input$ycol)]
+        withProgress(message = 'Creating sample wordcloud', value = 0, {
+        rawdata_url = paste("http://www.uwwxy.com/rdata/",input$rawdata, sep ="")
+        incProgress(1/4, detail = "")
+        load(url(rawdata_url))
+        incProgress(1/4, detail = "")
+        review_var_name = paste("score_",input$plot_sample_score,"_reviews", sep = "")
+        incProgress(1/4, detail = "")
+        myfunc.wordcloud(get(review_var_name), remove_words = c(stopwords("english"),"film","movie","can","films","movies","will","scenes"))
+        incProgress(1/4, detail = "")
       })
-    nn <- nrow(airquality)
-    
-    output$x1 = DT::renderDataTable(airquality[,-c(5,6)], 
-                                    options = list(
-                                      lengthMenu = list(c(3, 5, 10), c('3', '5', '10')),
-                                      pageLength = 5
-                                    ),
-                                    server = FALSE,
-                                    selection = list(target = 'row+column'))
-    
-    proxy = dataTableProxy('x1')
-    
-    observeEvent(input$resetSelection, {
-      proxy %>% selectRows(sample(1:nn, input$subsample, replace=F))
     })
     
     
-    # highlight selected rows in the scatterplot
-    output$x2 = renderPlot(height = 400, {
-      par(mar = c(4, 4, 1, .1))
-      plot(airquality[, c(input$xcol, input$ycol)])
-      s = input$x1_rows_selected
-      if (length(s)>=2) {
-        points(airquality[s, c(input$xcol, input$ycol), drop = FALSE], 
-               pch = 19, cex = 2)
-        abline(lsfit(airquality[s,input$xcol], 
-                     airquality[s,input$ycol])$coef, col=2)
-      }
+    ##############################################################
+    observeEvent(input$search_btn,{
+      output$x1 = DT::renderDataTable(myimdb.search(input$search_movie), 
+                                      options = list(
+                                        lengthMenu = list(c(3, 5, 10), c('3', '5', '10')),
+                                        pageLength = 5
+                                      ),
+                                      server = FALSE,
+                                      selection = 'single')
     })
+    
+    
     
     output$info = renderPrint({
       s = input$x1_rows_selected
-      cor.sel=NA
-      cat("These rows are selected:\n")
-      cat(s,sep=",")
-      cat("\n\n")
-      if(length(s)<=1){cat("Please select 2 rows for regression\n\n")}
-      if(length(s)) cor.sel=cor(airquality[s,input$xcol], 
-                                airquality[s,input$ycol],
-                                use="pairwise.complete.obs")
-      list(xcol=input$xcol, ycol=input$ycol, 
-           cor.all=cor(airquality[,input$xcol], 
-                       airquality[,input$ycol],
-                       use="pairwise.complete.obs"),
-           cor.sel=cor.sel)
-      
-    })
-    
-    insertion_sort <- eventReactive(input$act_sort,{
-      insertion.sort <- function(A){
-        for(i in c(2:length(A))){
-          for(j in c(i:2)){
-            if(A[j-1]>A[j]){
-              temp_val <- A[j-1]
-              A[j-1] <- A[j]
-              A[j]=temp_val
-            }
+      if(length(s)<1){cat("Please search and select a movie to guess\n\n")}
+      else{
+        #s = input$x1_rows_selected
+        search_table = myimdb.search(input$search_movie)
+        
+        withProgress(message = 'Retrieving sample Rawdata', value = 0, {
+          rawdata_url = paste("http://www.uwwxy.com/rdata/",input$rawdata, sep ="")
+          incProgress(1/3, detail = "")
+          load(url(rawdata_url))
+          incProgress(1/3, detail = "")
+          K_input = input$k_term
+          incProgress(1/3, detail = "")
+        })
+        #################################
+        
+        withProgress(message = 'Generating Term Table', value = 0, {
+          for(i in 2:9)
+          {
+            review_name = paste("score_",i,"_reviews",sep = "")
+            term_name = paste("score_",i,"_term",sep = "")
+            clean_reviews = imdb_score_clean_func(get(review_name))
+            table = imdb_score_term_func(clean_reviews, K=K_input)
+            assign(term_name, table)
+            incProgress(1/9, detail = paste("Generating score_", i," term table", sep = ""))
           }
-        }
-        return(A)
+        })
+        #################################
+        
+        withProgress(message = paste("Retrieving Movie <",search_table[s,1],">'s reviews"), value = 0, {
+          test_web_url = search_table[s,2]
+          incProgress(1/4, detail = "")
+          grab_pages = input$pages_to_guess
+          incProgress(1/4, detail = "")
+          review_prob = c(NULL)
+          incProgress(1/4, detail = "")
+          try_score_review = myimdb.rangereviews(test_web_url, grab_pages)
+          incProgress(1/4, detail = "")
+        })
+        #################################
+        withProgress(message = 'Creating review wordcloud', value = 0, {
+        output$plot2 <- renderPlot({myfunc.wordcloud(try_score_review, remove_words = c(stopwords("english"),"film","movie","can","films","movies","will","scenes"))})
+        incProgress(1/1, detail = "")
+        })
+        #################################
+        
+        withProgress(message = 'Guessing movie score', value = 0, {
+          for(i in 2:9)
+          {
+            term_name = paste("score_",i,"_term",sep="")
+            review_term_prob = guess_imdb_review_score(try_score_review, get(term_name))
+            review_prob = c(review_prob,review_term_prob)
+            incProgress(1/9, detail = "")
+          }
+        })
+        guess_table = cbind(2:9,review_prob)
+        colnames(guess_table)=c("score","prob")
+        guess_table <- guess_table[order(guess_table[,2],decreasing=TRUE),]
+        cat(paste("First Guess is score ", guess_table[1,1],"\nSecond Guess is score ", guess_table[2,1]))
+        cat("\n\n")
       }
-      temp_input = airquality[input$sortvar]
-      clean_temp_input = temp_input[complete.cases(temp_input),]
-      insertion.sort(clean_temp_input)
     })
-    
-    output$sort = renderPrint({
-      
-      temp_input = airquality[input$sortvar]
-      clean_temp_input = temp_input[complete.cases(temp_input),]
-      cat("The original data of ")
-      cat(input$sortvar)
-      cat("is: \n")
-      cat(clean_temp_input)
-      cat("\n")
-      cat("After insertion sort:\n")
-      cat(insertion_sort())
-    })
+    ##############################################################
+  
   })
