@@ -12,7 +12,6 @@ guess_imdb_review_score <- function(test_review, termtable)
   topK <- topK[order(topK$terms_counts,decreasing=TRUE),]
   topK <- subset(topK, select = c("terms","terms_counts"))
   guess_prob <- rep(NA, nrow(termtable))
-  pb3 <- txtProgressBar(min = 0, max = 9, char = "=", style = 3)
   for(i in 1:nrow(termtable)){
     term <- termtable[i,1]
     prop <- as.numeric(termtable[i,2])
@@ -23,9 +22,7 @@ guess_imdb_review_score <- function(test_review, termtable)
     else{
       guess_prob[i] <- 0
     }
-    setTxtProgressBar(pb3, i)
   }
-  close(pb3)
   final_prob = sum(guess_prob)
   return(final_prob)
 }

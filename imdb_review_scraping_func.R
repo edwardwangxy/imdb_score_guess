@@ -17,17 +17,26 @@ myimdb.reviews <- function(web_url, filter = "best", page = 1)
   return(reviews)
 }
 
-myimdb.rangereviews <- function(weburl_r, range, filter_r = "best", start = 1)
+myimdb.rangereviews <- function(weburl_r, range, filter_r = "best", start = 1, progress_bar=FALSE)
 {
-  #pb <- txtProgressBar(min = 0, max = range, char = "=", style = 3)
+  if(progress_bar)
+  {
+    pb <- txtProgressBar(min = 0, max = range, char = "=", style = 3) 
+  }
   first <- myimdb.reviews(weburl_r, filter = filter_r, page = start)
   for(i in (start+1):range)
   {
     addup = myimdb.reviews(weburl_r, filter = filter_r, page = i)
     first = c(first, addup)
- #   setTxtProgressBar(pb, i)
+    if(progress_bar)
+    {
+      setTxtProgressBar(pb, i) 
+    }
   }
- # close(pb)
+  if(progress_bar)
+  {
+    close(pb) 
+  }
   return(first)
 }
 

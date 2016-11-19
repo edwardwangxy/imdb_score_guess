@@ -96,22 +96,26 @@ save(list = objects_name_to_save, file=sprintf("%s/%s", dict_save_location, dict
 rm(list = ls()[-grep(paste(objects_name_to_save,collapse="|"), ls())])
 #########################################################################
 #start guessing the score
-#load("dictionary/dict-30-70-50.Rda") #using this function to load dictionary directly
+load("dictionary/dict-30-70-50.Rda") #using this function to load dictionary directly
 source("imdb_guess_review_func.R")
 source("imdb_review_scraping_func.R")
 test_web_url = "http://www.imdb.com/title/tt0209144/?ref_=fn_al_tt_1" #<westword> imdb_url
 grab_pages = 50
 review_prob = c(NULL)
-try_score_review = myimdb.rangereviews(test_web_url, grab_pages)
+try_score_review = myimdb.rangereviews(test_web_url, grab_pages, progress_bar=TRUE)
+pb4 <- txtProgressBar(min = 0, max = 9, char = "=", style = 3)
 for(i in 2:9)
 {
   term_name = paste("score_",i,"_term",sep="")
   review_term_prob = guess_imdb_review_score(try_score_review, get(term_name))
   review_prob = c(review_prob,review_term_prob)
+  setTxtProgressBar(pb4, i)
 }
+close(pb4)
 guess_table = cbind(2:9,review_prob)
 colnames(guess_table)=c("score","prob")
 guess_table <- guess_table[order(guess_table[,2],decreasing=TRUE),]
+rm(list = ls()[-grep("guess_table", ls())])
 cat(paste("First Guess is score ", guess_table[1,1],"\nSecond Guess is score ", guess_table[2,1]))
 
 
