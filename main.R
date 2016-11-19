@@ -7,10 +7,9 @@ library(tm)
 library(wordcloud)
 library(XML)
 
-
 #########################################################################
 #selecing subset from dataset
-set_review_num = 500
+set_review_num = 200
 imdb_data <- read.csv("movie_metadata.csv")
 imdb_data_select <- imdb_data[order(-imdb_data$imdb_score),c("imdb_score","movie_imdb_link","movie_title","num_user_for_reviews")]
 imdb_data_select <- subset(imdb_data_select, num_user_for_reviews >= set_review_num)
@@ -32,8 +31,8 @@ close(pb)
 #start achieving all reviews for each score level
 dict_save_location <- "dictionary"
 source("imdb_review_scraping_func.R")
-pages_each_movie = 50
-max_movies_pick = 50
+pages_each_movie = 10
+max_movies_pick = 5
 total_movie_count = 0
 progress_bar_counting = 0
 for(n in 2:9)
@@ -42,6 +41,7 @@ for(n in 2:9)
   total_movie_count = total_movie_count + min(nrow(get(link_list_name)),max_movies_pick)
 }
 pb2 <- txtProgressBar(min = 0, max = total_movie_count, char = "=", style = 3)
+raw_save_list = c(NULL)
 for(n in 2:9)
 {
   link_list_name = paste("imdb_score_",n,sep="")
@@ -50,7 +50,6 @@ for(n in 2:9)
     progress_bar_counting = progress_bar_counting + 1
     if(i ==1)
     {
-      raw_save_list = c(NULL)
       review_final = list(NULL)
     }
     review_test = myimdb.rangereviews(get(link_list_name)$movie_imdb_link[[i]], range = pages_each_movie)
@@ -63,18 +62,20 @@ for(n in 2:9)
   rm(list = c(link_list_name))
 }
 close(pb2)
-rawdata_name <- sprintf("rawdata%s%s.Rda",substring(Sys.time(),12,13),substring(Sys.time(),15,16))
-save(list = raw_save_list,file=sprintf("%s/rawdata/%s", dict_save_location,rawdata_name))
-
+rawdata_name <- sprintf("rawdata-%d-%d.Rda",max_movies_pick,pages_each_movie)
+raw_save_list = c(raw_save_list,"max_movies_pick","pages_each_movie")
+save(list = raw_save_list, file=sprintf("%s/rawdata/%s", dict_save_location,rawdata_name))
+rm(list = ls()[-grep(paste(raw_save_list,collapse="|"), ls())])
 
 #########################################################################
 #create term table for different scores and save to dictionary
+#load("dictionary/rawdata/rawdata-30-70.Rda") #using this function to load data directly
 source("imdb_score_clean_func.R")
 source("imdb_score_term_func.R")
 
 K_input = 50
 
-dictionary_name <- sprintf("dict%s%s.Rda",substring(Sys.time(),12,13),substring(Sys.time(),15,16))
+dictionary_name <- sprintf("dict-%d-%d-%d.Rda",max_movies_pick,pages_each_movie,K_input)
 dict_save_location <- "dictionary"
 
 pb3 <- txtProgressBar(min = 0, max = 9, char = "=", style = 3)
@@ -88,16 +89,18 @@ for(i in 2:9)
   assign(term_name, table)
   rm(list = c(review_name))
   objects_name_to_save = c(objects_name_to_save,term_name)
-  setTxtProgressBar(pb3, n)
+  setTxtProgressBar(pb3, i)
 }
 close(pb3)
-save(list = objects_name_to_save,file=sprintf("%s/%s", dict_save_location,dictionary_name))
-
+save(list = objects_name_to_save, file=sprintf("%s/%s", dict_save_location, dictionary_name))
+rm(list = ls()[-grep(paste(objects_name_to_save,collapse="|"), ls())])
 #########################################################################
 #start guessing the score
+#load("dictionary/dict-30-70-50.Rda") #using this function to load dictionary directly
 source("imdb_guess_review_func.R")
-test_web_url = "http://www.imdb.com/title/tt2496468/?ref_=fn_al_tt_1" #<westword> imdb_url
-grab_pages = 70
+source("imdb_review_scraping_func.R")
+test_web_url = "http://www.imdb.com/title/tt0209144/?ref_=fn_al_tt_1" #<westword> imdb_url
+grab_pages = 50
 review_prob = c(NULL)
 try_score_review = myimdb.rangereviews(test_web_url, grab_pages)
 for(i in 2:9)
@@ -108,4 +111,7 @@ for(i in 2:9)
 }
 guess_table = cbind(2:9,review_prob)
 colnames(guess_table)=c("score","prob")
-guess_table[,1][which.max(guess_table[,2])]
+guess_table <- guess_table[order(guess_table[,2],decreasing=TRUE),]
+cat(paste("First Guess is score ", guess_table[1,1],"\nSecond Guess is score ", guess_table[2,1]))
+
+

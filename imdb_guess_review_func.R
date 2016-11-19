@@ -23,7 +23,7 @@ guess_imdb_review_score <- function(test_review, termtable)
     else{
       guess_prob[i] <- 0
     }
-    setTxtProgressBar(pb3, n)
+    setTxtProgressBar(pb3, i)
   }
   close(pb3)
   final_prob = sum(guess_prob)
