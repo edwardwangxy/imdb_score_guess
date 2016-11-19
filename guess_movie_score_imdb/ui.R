@@ -13,7 +13,7 @@ shinyUI(
     dashboardSidebar(
       fluidPage(
         
-        selectInput('rawdata', 'Pick Data', c("rawdata-10-10.Rda","rawdata-5-5.Rda"),
+        selectInput('rawdata', 'Pick Data', c("rawdata-10-10.Rda","rawdata-5-5.Rda","rawdata-20-15.Rda","rawdata-20-10.Rda"),
                     selected="rawdata-10-10.Rda"),
         
         sliderInput("plot_sample_score", label = "choose a Score to plot",
@@ -40,8 +40,8 @@ shinyUI(
       fluidRow(
         box(column(12,h1('Term plot'),plotOutput("plot1"))),
         box(column(12, h1('Search Result'),DT::dataTableOutput('x1'))),
-        box(column(12,h1('Guess plot'),plotOutput("plot2"))),
-        box(column(12, h1('Computer Guess'),verbatimTextOutput('info')))
+        box(column(12, h1('Computer Guess'),verbatimTextOutput('info'))),
+        box(column(12,h1('Guess plot'),plotOutput("plot2")))
       )
     )
   ))

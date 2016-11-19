@@ -51,9 +51,10 @@ myimdb.search <- function(search_key_words)
   {
     return(NULL)
   }
-  search_list = html_nodes(grabe_page, xpath = '//*[@id="main"]/div/div[2]/table//*[@class="result_text"]//a')
+  search_list = html_nodes(grabe_page, xpath = '//*[@id="main"]/div/div[2]/table//*[@class="result_text"]')
+  search_list2 = html_nodes(grabe_page, xpath = '//*[@id="main"]/div/div[2]/table//*[@class="result_text"]//a')
   search_list_title = html_text(search_list)
-  search_list_link = html_attr(search_list, "href")
+  search_list_link = html_attr(search_list2, "href")
   search_list_link = paste("http://www.imdb.com",search_list_link,sep = "")
   search_result = cbind(search_list_title, search_list_link)
   return(search_result)
