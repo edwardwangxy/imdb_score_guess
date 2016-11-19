@@ -17,6 +17,19 @@ myimdb.reviews <- function(web_url, filter = "best", page = 1)
   return(reviews)
 }
 
+myimdb.rating <- function(web_url)
+{
+  web_url = sapply(strsplit(web_url, split='?', fixed=TRUE), function(x) (x[1]))
+  grabe_page = read_html(web_url)
+  rating = html_nodes(grabe_page, xpath = '//*[@id="title-overview-widget"]/div[2]/div[2]/div/div[1]/div[1]/div[1]/strong/span')
+  rating = html_text(rating)
+  if(length(rating)==0)
+  {
+    rating="NO Score"
+  }
+  return(rating)
+}
+
 myimdb.rangereviews <- function(weburl_r, range, filter_r = "best", start = 1, progress_bar=FALSE)
 {
   if(progress_bar)
@@ -56,7 +69,12 @@ myimdb.search <- function(search_key_words)
   search_list_title = html_text(search_list)
   search_list_link = html_attr(search_list2, "href")
   search_list_link = paste("http://www.imdb.com",search_list_link,sep = "")
-  search_result = cbind(search_list_title, search_list_link)
+  movie_rating=c(NULL)
+  for(i in 1:length(search_list_link))
+  {
+    movie_rating = c(movie_rating, myimdb.rating(search_list_link[i]))
+  }
+  search_result = cbind(search_list_title, search_list_link, movie_rating)
   return(search_result)
 }
 
