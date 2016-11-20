@@ -12,9 +12,9 @@ shinyUI(
     dashboardHeader(title = "Guess Movie Score"),
     dashboardSidebar(
       fluidPage(
-        
-        selectInput('rawdata', 'Pick Data', c("rawdata-10-10.Rda","rawdata-5-5.Rda","rawdata-20-15.Rda","rawdata-20-10.Rda"),
-                    selected="rawdata-10-10.Rda"),
+        load(url("http://www.uwwxy.com/rdata/filelist.Rda")),
+        selectInput('rawdata', 'Pick Data', filelist,
+                    selected=filelist[1]),
         
         sliderInput("plot_sample_score", label = "choose a Score to plot",
                     min = 2, max = 9, value = 2, step = 1),

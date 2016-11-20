@@ -24,8 +24,6 @@ for(i in 2:9)
 }
 close(pb)
 
-pages_list = seq(10, 30, 5)
-movie_list = seq(10, 60, 10)
 
 generate_raw_dict <- function(page, movie)
 {
@@ -92,6 +90,8 @@ generate_raw_dict <- function(page, movie)
 
 #########################################################################
 #start achieving all reviews for each score level
+pages_list = seq(25, 30, 5)
+movie_list = seq(40, 60, 10)
 for(movie_choose in movie_list)
 {
   for(pages_choose in pages_list)
@@ -99,4 +99,12 @@ for(movie_choose in movie_list)
     generate_raw_dict(page = 30, movie = 60)
   }
 }
+
+########################################################################
+unlink("dictionary/rawdata/filelist.Rda")
+filelist = list.files("dictionary/rawdata")
+save(list = "filelist", file=sprintf("dictionary/rawdata/filelist.Rda"))
+
+
+
 
