@@ -190,6 +190,11 @@ shinyServer(
         cat(paste("Computer Guess of movie <",search_table[s,1],">'s score:\n", sep=""))
         cat(paste("First Guess is score ", guess_table[1,1],"\nSecond Guess is score ", guess_table[2,1]))
         cat("\n\n")
+        cat("\n=======================reference=======================\n")
+        cat("Here is a reference of percentage table for the score:\n\n")
+        guess_table[,2] = round(guess_table[,2]/sum(guess_table[,2]),3)
+        cat(write.table(guess_table))
+        cat("\n=======================================================\n")
       }
     })
     ##############################################################
