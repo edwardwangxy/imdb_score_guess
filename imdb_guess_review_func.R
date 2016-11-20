@@ -7,7 +7,7 @@ guess_imdb_review_score <- function(test_review, termtable)
   prep_fun <- tolower # makes lowercase
   tok_fun <- word_tokenizer # look at words
   lower_review_test_tok <- itoken(clean_test_review, preprocessor = prep_fun, tokenizer = tok_fun,  progressbar = FALSE) 
-  reviewVocab <- create_vocabulary(lower_review_test_tok, stopwords=c(stopwords("english"),"film","movie","can","films","movies","will","scenes")) #
+  reviewVocab <- create_vocabulary(lower_review_test_tok, stopwords=c(stopwords("english"),"film","movie","can","films","movies","will","scenes","just")) #
   topK <- reviewVocab$vocab
   topK <- topK[order(topK$terms_counts,decreasing=TRUE),]
   topK <- subset(topK, select = c("terms","terms_counts"))

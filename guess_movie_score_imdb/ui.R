@@ -16,9 +16,6 @@ shinyUI(
         selectInput('rawdata', 'Pick Data', filelist,
                     selected=filelist[1]),
         
-        sliderInput("plot_sample_score", label = "choose a Score to plot",
-                    min = 2, max = 9, value = 2, step = 1),
-        
         sliderInput("k_term", label = "choose # of terms",
                     min = 10, max = 80, value = 50, step = 10),
         
@@ -38,10 +35,23 @@ shinyUI(
     dashboardBody(
       # Boxes need to be put in a row (or column)
       fluidRow(
-        box(column(12,h1('Term plot'),plotOutput("plot1"))),
+        tabBox(
+          title = "Sample wordcloud",
+          id = "tabset1", height = "500px", width = "50%",
+          tabPanel("Score_2", plotOutput("plot1_1")),
+          tabPanel("Score_3", plotOutput("plot1_2")),
+          tabPanel("Score_4", plotOutput("plot1_3")),
+          tabPanel("Score_5", plotOutput("plot1_4")),
+          tabPanel("Score_6", plotOutput("plot1_5")),
+          tabPanel("Score_7", plotOutput("plot1_6")),
+          tabPanel("Score_8", plotOutput("plot1_7")),
+          tabPanel("Score_9", plotOutput("plot1_8"))
+        ),
+        box(title = "Picked Movie wordcloud",
+            id = "tabset1", height = "500px", width = "50%",
+            plotOutput("plot2")),
         box(column(12, h1('Search Result'),DT::dataTableOutput('x1'))),
-        box(column(12, h1('Computer Guess'),verbatimTextOutput('info'))),
-        box(column(12,h1('Guess plot'),plotOutput("plot2")))
+        box(column(12, h1('Computer Guess'),verbatimTextOutput('info')))
       )
     )
   ))

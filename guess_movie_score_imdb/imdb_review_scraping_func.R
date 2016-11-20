@@ -74,7 +74,7 @@ myimdb.search <- function(search_key_words)
   {
     movie_rating = c(movie_rating, myimdb.rating(search_list_link[i]))
   }
-  search_result = cbind(search_list_title, search_list_link, movie_rating)
+  search_result = cbind(search_list_title, search_list_link, movie_rating)  #, movie_rating
   return(search_result)
 }
 
