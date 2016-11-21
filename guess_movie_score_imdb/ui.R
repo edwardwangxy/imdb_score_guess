@@ -26,7 +26,10 @@ shinyUI(
                   placeholder = "enter movie name"),
         
         actionButton('search_btn',
-                     label = "Search")
+                     label = "Search"),
+        
+        actionButton('guess_btn',
+                     label = "start guess")
         
 ###########################################################################
 
@@ -37,7 +40,7 @@ shinyUI(
       fluidRow(
         tabBox(
           title = "Sample wordcloud",
-          id = "tabset1", height = "500px", width = "50%",
+          id = "tabset1", height = "500px", width = 6,
           tabPanel("Score_2", plotOutput("plot1_1")),
           tabPanel("Score_3", plotOutput("plot1_2")),
           tabPanel("Score_4", plotOutput("plot1_3")),
@@ -48,10 +51,14 @@ shinyUI(
           tabPanel("Score_9", plotOutput("plot1_8"))
         ),
         box(title = "Picked Movie wordcloud",
-            id = "tabset1", height = "500px", width = "50%",
+            id = "piccloud", height = "500px", width = 6,
             plotOutput("plot2")),
-        box(column(12, h1('Search Result'),DT::dataTableOutput('x1'))),
-        box(column(12, h1('Computer Guess'),verbatimTextOutput('info')))
+        box(title = "Search Result",
+            id = "search", height = "500px", width = 6
+            ,DT::dataTableOutput('x1')),
+        box(title = "Search Result",
+            id = "result", height = "500px", width = 6,
+            verbatimTextOutput('info'))
       )
     )
   ))

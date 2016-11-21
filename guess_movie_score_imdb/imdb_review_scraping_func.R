@@ -53,7 +53,7 @@ myimdb.rangereviews <- function(weburl_r, range, filter_r = "best", start = 1, p
   return(first)
 }
 
-myimdb.search <- function(search_key_words)
+myimdb.search <- function(search_key_words, rate = FALSE)
 {
   key_word = gsub(" ","+",search_key_words)
   web_url = paste("http://www.imdb.com/find?ref_=nv_sr_fn&q=", key_word,"&s=all", sep="")
@@ -69,12 +69,19 @@ myimdb.search <- function(search_key_words)
   search_list_title = html_text(search_list)
   search_list_link = html_attr(search_list2, "href")
   search_list_link = paste("http://www.imdb.com",search_list_link,sep = "")
-  movie_rating=c(NULL)
-  for(i in 1:length(search_list_link))
+  if(rate)
   {
-    movie_rating = c(movie_rating, myimdb.rating(search_list_link[i]))
+    movie_rating=c(NULL)
+    for(i in 1:length(search_list_link))
+    {
+      movie_rating = c(movie_rating, myimdb.rating(search_list_link[i]))
+    }
+    search_result = cbind(search_list_title, search_list_link, movie_rating)
   }
-  search_result = cbind(search_list_title, search_list_link, movie_rating)  #, movie_rating
+  else
+  {
+    search_result = cbind(search_list_title, search_list_link)
+  }
   return(search_result)
 }
 
