@@ -6,12 +6,6 @@ shinyServer(
     source("imdb_score_term_func.R")
     source("imdb_guess_review_func.R")
     ###############################################################
-    output$loadrawdata <- renderText({
-      rawdata_url = paste("http://www.uwwxy.com/rdata/",input$rawdata, sep ="")
-      env = load(url(rawdata_url))
-      cat("Load Raw Data")
-    })
-    
     output$plot1_1 <- renderPlot({
         withProgress(message = 'Creating score_2 wordcloud', value = 0, {
           rawdata_url = paste("http://www.uwwxy.com/rdata/",input$rawdata, sep ="")

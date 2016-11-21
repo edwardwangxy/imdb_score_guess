@@ -90,13 +90,13 @@ generate_raw_dict <- function(page, movie)
 
 #########################################################################
 #start achieving all reviews for each score level
-pages_list = seq(25, 30, 5)
-movie_list = seq(40, 60, 10)
+pages_list = seq(30, 40, 5)
+movie_list = seq(40, 50, 10)
 for(movie_choose in movie_list)
 {
   for(pages_choose in pages_list)
   {
-    generate_raw_dict(page = 70, movie = 30)
+    generate_raw_dict(page = pages_choose, movie = movie_choose)
   }
 }
 
