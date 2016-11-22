@@ -6,7 +6,7 @@ library(SnowballC)
 library(tm)
 library(wordcloud)
 library(XML)
-
+library(RColorBrewer)
 #########################################################################
 #selecing subset from dataset
 set_review_num = 200
@@ -107,8 +107,10 @@ pb4 <- txtProgressBar(min = 0, max = 9, char = "=", style = 3)
 for(i in 2:9)
 {
   term_name = paste("score_",i,"_term",sep="")
-  review_term_prob = guess_imdb_review_score(try_score_review, get(term_name))
-  review_prob = c(review_prob,review_term_prob)
+  review_term_table_name = paste("review_",i,"_table",sep="")
+  review_term_table = guess_imdb_review_score(try_score_review, get(term_name))
+  review_prob = c(review_prob,sum(as.numeric(review_term_table[,2])))
+  assign(review_term_table_name, review_term_table)
   setTxtProgressBar(pb4, i)
 }
 close(pb4)
@@ -117,5 +119,5 @@ colnames(guess_table)=c("score","prob")
 guess_table <- guess_table[order(guess_table[,2],decreasing=TRUE),]
 rm(list = ls()[-grep("guess_table", ls())])
 cat(paste("First Guess is score ", guess_table[1,1],"\nSecond Guess is score ", guess_table[2,1]))
-
+barplot(as.numeric(review_2_table[1:10,3]), legend.text = review_2_table[1:10,1],col=brewer.pal(10, "Paired"))
 

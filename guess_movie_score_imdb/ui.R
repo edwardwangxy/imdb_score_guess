@@ -39,7 +39,7 @@ shinyUI(
       # Boxes need to be put in a row (or column)
       fluidRow(
         tabBox(
-          title = "Sample wordcloud",
+          title = "Training dataset",
           id = "tabset1", height = "500px", width = 6,
           tabPanel("Score_2", plotOutput("plot1_1")),
           tabPanel("Score_3", plotOutput("plot1_2")),
@@ -50,9 +50,18 @@ shinyUI(
           tabPanel("Score_8", plotOutput("plot1_7")),
           tabPanel("Score_9", plotOutput("plot1_8"))
         ),
-        box(title = "Picked Movie wordcloud",
+        tabBox(title = "Picked Movie",
             id = "piccloud", height = "500px", width = 6,
-            plotOutput("plot2")),
+            tabPanel("Wordcloud", plotOutput("plot2")),
+            tabPanel("term_2", plotOutput("bar_2")),
+            tabPanel("term_3", plotOutput("bar_3")),
+            tabPanel("term_4", plotOutput("bar_4")),
+            tabPanel("term_5", plotOutput("bar_5")),
+            tabPanel("term_6", plotOutput("bar_6")),
+            tabPanel("term_7", plotOutput("bar_7")),
+            tabPanel("term_8", plotOutput("bar_8")),
+            tabPanel("term_9", plotOutput("bar_9"))
+        ),
         box(title = "Search Result",
             id = "search", height = "500px", width = 6
             ,DT::dataTableOutput('x1')),
