@@ -9,8 +9,11 @@ library(XML)
 library(RColorBrewer)
 #########################################################################
 #selecing subset from dataset
+#Set the minimum size of reviews of movie to pick as training set
+#read the table file and grabe all the links of movies with reivews larger than the limit
+
 set_review_num = 200
-imdb_data <- read.csv("movie_metadata.csv")
+imdb_data <- read.csv("movie_metadata.csv") 
 imdb_data_select <- imdb_data[order(-imdb_data$imdb_score),c("imdb_score","movie_imdb_link","movie_title","num_user_for_reviews")]
 imdb_data_select <- subset(imdb_data_select, num_user_for_reviews >= set_review_num)
 pb <- txtProgressBar(0,9, style = 3)
@@ -28,8 +31,9 @@ close(pb)
 
 
 #########################################################################
-#start achieving all reviews for each score level
-dict_save_location <- "dictionary"
+#Using the links start achieving all reviews for each score level
+
+dict_save_location <- "dictionary" #save location of rawdata and term tables
 source("imdb_review_scraping_func.R")
 pages_each_movie = 10
 max_movies_pick = 5
@@ -64,8 +68,8 @@ for(n in 2:9)
 close(pb2)
 rawdata_name <- sprintf("rawdata-%d-%d.Rda",max_movies_pick,pages_each_movie)
 raw_save_list = c(raw_save_list,"max_movies_pick","pages_each_movie")
-save(list = raw_save_list, file=sprintf("%s/rawdata/%s", dict_save_location,rawdata_name))
-rm(list = ls()[-grep(paste(raw_save_list,collapse="|"), ls())])
+save(list = raw_save_list, file=sprintf("%s/rawdata/%s", dict_save_location,rawdata_name)) #save rawdatas into files
+rm(list = ls()[-grep(paste(raw_save_list,collapse="|"), ls())])  #remove all the useless object
 
 #########################################################################
 #create term table for different scores and save to dictionary
