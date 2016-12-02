@@ -22,9 +22,14 @@ library(dplyr)
 
 ## Step 2: Explore the data.
 ```{r}
+<<<<<<< HEAD
 load("reference/data/spam.RData")
 varnames=read.csv("reference/data/spam_var.csv")
 View(spamdata.train)
+=======
+load("data/spam.RData")
+varnames=read.csv("reference/data/spam_var.csv")
+>>>>>>> a566ad8e3aeb23b0fb6ac999cdca23d5cae68732
 spamdata.test$spam=as.factor(spamdata.test$spam)
 spamdata.train$spam=as.factor(spamdata.train$spam)
 
