@@ -1,0 +1,145 @@
+---
+title: 'Classification and regression tree using `rpart` '
+output:
+  html_document: default
+  html_notebook: default
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. 
+
+## Step 1: Load the libraries.
+```{r}
+#install.packages("rpart")
+#install.packages("rpart.plot")
+#install.packages("DT")
+#install.packages("gbm")
+#install.packages("shiny")
+library(rpart)
+library(rpart.plot)
+library(DT)
+library(dplyr)
+```
+
+## Step 2: Explore the data.
+```{r}
+load("reference/data/spam.RData")
+varnames=read.csv("reference/data/spam_var.csv")
+View(spamdata.train)
+spamdata.test$spam=as.factor(spamdata.test$spam)
+spamdata.train$spam=as.factor(spamdata.train$spam)
+
+colnames(spamdata.train)[1:57]=as.character(varnames[,1])
+colnames(spamdata.test)[1:57]=as.character(varnames[,1])
+datatable(sample_n(spamdata.train,50), options = list(scrollX=T, pageLength = 10))
+```
+
+## Step 3: Fit a classification tree.
+```{r}
+fit <- rpart(spam ~ word_freq_address + word_freq_credit + char_freq_dollar,
+  	         method="class", data=spamdata.train,
+             control = rpart.control(minsplit=20, cp=0.001))
+
+cols <- ifelse(fit$frame$yval == 2, "darkred", "deepskyblue3")
+# red if spam
+prp(fit, main="Classification Tree for Spam Data",
+    extra=106, # display prob of survival and percent of obs
+    fallen.leaves=TRUE, # put the leaves on the bottom of the page
+    shadow.col="gray", # shadows under the leaves
+    branch.lty=2, # draw branches using dotted lines
+    #branch=.5, # change angle of branch lines
+    faclen=0, # faclen=0 to print full factor names
+    trace=1, # print the automatically calculated cex
+    split.cex=1.2, # make the split text larger than the node text
+    split.prefix="Is ", # put "is " before split text
+    split.suffix="?", # put "?" after split text
+    col=cols, border.col=cols, # red if spam, blue if not
+    split.box.col="lightgray", # lightgray split boxes (default is white)
+    split.border.col="darkgray", # darkgray border on split boxes
+    split.round=.5) # round the split box corners a tad
+```
+
+### Check the classification performance
+#### Training set
+```{r}
+conf.matrix <- table(spamdata.train$spam, predict(fit,type="class"))
+  rownames(conf.matrix) <- paste("Actual", rownames(conf.matrix), sep = ":")
+  colnames(conf.matrix) <- paste("Pred", colnames(conf.matrix), sep = ":")
+print(conf.matrix)
+```
+#### test set
+```{r}
+conf.matrix <- table(spamdata.test$spam, predict(fit, spamdata.test, type="class"))
+  rownames(conf.matrix) <- paste("Actual", rownames(conf.matrix), sep = ":")
+  colnames(conf.matrix) <- paste("Pred", colnames(conf.matrix), sep = ":")
+print(conf.matrix)
+```
+
+## Step 4: prune the tree
+```{r}
+# prune the tree 
+print(fit$cptable[which.min(fit$cptable[,"xerror"]),"CP"]) #best CP for pruning the tree.
+
+pfit<- prune(fit, cp=fit$cptable[which.min(fit$cptable[,"xerror"]),"CP"])
+cols <- ifelse(pfit$frame$yval == 2, "darkred", "deepskyblue3")
+# red if spam
+prp(pfit, main="Pruned Classification Tree for Spam Data",
+    extra=106, # display prob of survival and percent of obs
+    fallen.leaves=TRUE, # put the leaves on the bottom of the page
+    shadow.col="gray", # shadows under the leaves
+    branch.lty=2, # draw branches using dotted lines
+    #branch=.5, # change angle of branch lines
+    faclen=0, # faclen=0 to print full factor names
+    trace=1, # print the automatically calculated cex
+    split.cex=1.2, # make the split text larger than the node text
+    split.prefix="Is ", # put "is " before split text
+    split.suffix="?", # put "?" after split text
+    col=cols, border.col=cols, # red if spam, blue if not
+    split.box.col="lightgray", # lightgray split boxes (default is white)
+    split.border.col="darkgray", # darkgray border on split boxes
+    split.round=.5) # round the split box corners a tad
+```
+
+### Check the classification performance. 
+#### Training set
+```{r}
+conf.matrix <- table(spamdata.train$spam, predict(pfit,type="class"))
+  rownames(conf.matrix) <- paste("Actual", rownames(conf.matrix), sep = ":")
+  colnames(conf.matrix) <- paste("Pred", colnames(conf.matrix), sep = ":")
+print(conf.matrix)
+```
+#### test set
+```{r}
+conf.matrix <- table(spamdata.test$spam, predict(pfit, spamdata.test, type="class"))
+  rownames(conf.matrix) <- paste("Actual", rownames(conf.matrix), sep = ":")
+  colnames(conf.matrix) <- paste("Pred", colnames(conf.matrix), sep = ":")
+print(conf.matrix)
+```
+
+## Step 5: fit many classification trees (Random Forest)
+
+```{r}
+#install.packages("randomForest")
+library(randomForest)
+fit <- randomForest(spam ~ word_freq_address 
+                    + word_freq_credit + char_freq_dollar,
+                    ntree=2000,
+  	                data=spamdata.train)
+print(fit) # view results 
+importance(fit) # importance of each predictor
+```
+
+### Check the classification performance. 
+#### Training set
+```{r}
+conf.matrix <- table(spamdata.train$spam, predict(fit,type="response"))
+  rownames(conf.matrix) <- paste("Actual", rownames(conf.matrix), sep = ":")
+  colnames(conf.matrix) <- paste("Pred", colnames(conf.matrix), sep = ":")
+print(conf.matrix)
+```
+#### test set
+```{r}
+conf.matrix <- table(spamdata.test$spam, predict(fit, spamdata.test, type="response"))
+  rownames(conf.matrix) <- paste("Actual", rownames(conf.matrix), sep = ":")
+  colnames(conf.matrix) <- paste("Pred", colnames(conf.matrix), sep = ":")
+print(conf.matrix)
+```

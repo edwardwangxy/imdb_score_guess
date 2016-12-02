@@ -31,9 +31,11 @@ close(pb)
 #start achieving all reviews for each score level
 dict_save_location <- "dictionary"
 source("imdb_review_scraping_func.R")
-pages_each_movie = 10
-max_movies_pick = 5
+#choose inputs here
+pages_each_movie = 2
+max_movies_pick = 2
 total_movie_count = 0
+####
 progress_bar_counting = 0
 for(n in 2:9)
 {
@@ -45,21 +47,24 @@ raw_save_list = c(NULL)
 for(n in 2:9)
 {
   link_list_name = paste("imdb_score_",n,sep="")
-  for(i in 1:min(nrow(get(link_list_name)),max_movies_pick))
+  for(i in 1:min(nrow(get(link_list_name)),max_movies_pick)) #do not achieve more than available movies
   {
     progress_bar_counting = progress_bar_counting + 1
-    if(i ==1)
+    if(i ==1) #create empty list for later use
     {
       review_final = list(NULL)
+      review_score = list(NULL)
     }
     review_test = myimdb.rangereviews(get(link_list_name)$movie_imdb_link[[i]], range = pages_each_movie)
     setTxtProgressBar(pb2, progress_bar_counting)
-    review_final = c(review_final, review_test)
+    review_score = c(review_test, get(link_list_name)$imdb_score[i])
+    review_final = rbind(review_final, review_score)
   }
   review_name = paste("score_",n,"_reviews", sep = "")
-  raw_save_list = c(raw_save_list, review_name)
+  raw_save_list = c(raw_save_list, review_name, link_list_name)
+  review_final = review_final[-1,] #get rid of NULL row
   assign(review_name, review_final)
-  rm(list = c(link_list_name))
+  #rm(list = c(link_list_name)) 
 }
 close(pb2)
 rawdata_name <- sprintf("rawdata-%d-%d.Rda",max_movies_pick,pages_each_movie)
@@ -84,11 +89,11 @@ for(i in 2:9)
 {
   review_name = paste("score_",i,"_reviews",sep = "")
   term_name = paste("score_",i,"_term",sep = "")
-  clean_reviews = imdb_score_clean_func(get(review_name))
+  clean_reviews = imdb_score_clean_func(get(review_name)[,-ncol(get(review_name))])
   table = imdb_score_term_func(clean_reviews, K=K_input)
   assign(term_name, table)
-  rm(list = c(review_name))
-  objects_name_to_save = c(objects_name_to_save,term_name)
+  #rm(list = c(review_name))
+  objects_name_to_save = c(objects_name_to_save,review_name, term_name)
   setTxtProgressBar(pb3, i)
 }
 close(pb3)
@@ -96,7 +101,7 @@ save(list = objects_name_to_save, file=sprintf("%s/%s", dict_save_location, dict
 rm(list = ls()[-grep(paste(objects_name_to_save,collapse="|"), ls())])
 #########################################################################
 #start guessing the score
-load("dictionary/dict-30-70-50.Rda") #using this function to load dictionary directly
+#load("dictionary/dict-30-70-50.Rda") #using this function to load dictionary directly
 source("imdb_guess_review_func.R")
 source("imdb_review_scraping_func.R")
 test_web_url = "http://www.imdb.com/title/tt0209144/?ref_=fn_al_tt_1" #<westword> imdb_url
@@ -115,9 +120,9 @@ for(i in 2:9)
 }
 close(pb4)
 guess_table = cbind(2:9,review_prob)
+barplot(as.numeric(review_2_table[1:10,3]), legend.text = review_2_table[1:10,1],col=brewer.pal(10, "Paired"))
 colnames(guess_table)=c("score","prob")
 guess_table <- guess_table[order(guess_table[,2],decreasing=TRUE),]
 rm(list = ls()[-grep("guess_table", ls())])
 cat(paste("First Guess is score ", guess_table[1,1],"\nSecond Guess is score ", guess_table[2,1]))
-barplot(as.numeric(review_2_table[1:10,3]), legend.text = review_2_table[1:10,1],col=brewer.pal(10, "Paired"))
 
