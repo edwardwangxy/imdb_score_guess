@@ -37,7 +37,7 @@ dict_save_location <- "dictionary" #save location of rawdata and term tables
 source("imdb_review_scraping_func.R")
 #choose inputs here
 pages_each_movie = 2
-max_movies_pick = 2
+max_movies_pick = 30
 total_movie_count = 0
 ####
 progress_bar_counting = 0
@@ -127,6 +127,6 @@ guess_table = cbind(2:9,review_prob)
 barplot(as.numeric(review_2_table[1:10,3]), legend.text = review_2_table[1:10,1],col=brewer.pal(10, "Paired"))
 colnames(guess_table)=c("score","prob")
 guess_table <- guess_table[order(guess_table[,2],decreasing=TRUE),]
-rm(list = ls()[-grep("guess_table", ls())])
+#rm(list = ls()[-grep("guess_table", ls())])
 cat(paste("First Guess is score ", guess_table[1,1],"\nSecond Guess is score ", guess_table[2,1]))
 

@@ -7,7 +7,7 @@ source("imdb_score_term_func.R")
 
 score_review_name_list = c(NULL)
 total = c(NULL)
-final_freq_table = c(NULL)
+
 for(i in 2:9)
 {
   score_review_name = paste("score_",i,"_reviews", sep = "")
@@ -18,20 +18,58 @@ for(i in 2:9)
 total_clean_reviews = imdb_score_clean_func(total[,-ncol(total)])
 total_table = imdb_score_term_func(total_clean_reviews, K=100)
 all_variables = total_table[,1]
+test_table = imdb_train_data_generate(all_variables, score_review_name_list, processbar = TRUE)
+test_table$imdb_score = as.factor(test_table$imdb_score)
+v_name = paste(all_variables, collapse = "+")
+rpart_formu = paste("imdb_score~",v_name, sep = "")
+fit <- rpart(imdb_score ~ .,
+             method="class", data=test_table,
+             control = rpart.control(minsplit=20, cp=0.001))
+prp(fit, main="Classification Tree for Spam Data",
+    #extra="auto", # display prob of survival and percent of obs
+    fallen.leaves=TRUE, # put the leaves on the bottom of the page
+    shadow.col="gray", # shadows under the leaves
+    branch.lty=2, # draw branches using dotted lines
+    #branch=.5, # change angle of branch lines
+    faclen=0, # faclen=0 to print full factor names
+    trace=1, # print the automatically calculated cex
+    split.cex=1.2, # make the split text larger than the node text
+    split.prefix="Is ", # put "is " before split text
+    split.suffix="?", # put "?" after split text
+    #col=cols, border.col=cols, # red if spam, blue if not
+    split.box.col="lightgray", # lightgray split boxes (default is white)
+    split.border.col="darkgray", # darkgray border on split boxes
+    split.round=.5) # round the split box corners a tad
 
+pfit<- prune(fit, cp=fit$cptable[which.min(fit$cptable[,"xerror"]),"CP"])
+prp(pfit, main="Classification Tree for Spam Data",
+    #extra="auto", # display prob of survival and percent of obs
+    fallen.leaves=TRUE, # put the leaves on the bottom of the page
+    shadow.col="gray", # shadows under the leaves
+    branch.lty=2, # draw branches using dotted lines
+    #branch=.5, # change angle of branch lines
+    faclen=0, # faclen=0 to print full factor names
+    trace=1, # print the automatically calculated cex
+    split.cex=1.2, # make the split text larger than the node text
+    split.prefix="Is ", # put "is " before split text
+    split.suffix="?", # put "?" after split text
+    #col=cols, border.col=cols, # red if spam, blue if not
+    split.box.col="lightgray", # lightgray split boxes (default is white)
+    split.border.col="darkgray", # darkgray border on split boxes
+    split.round=.5) # round the split box corners a tad
 #######################################################################################
 imdb_train_data_generate = function(variable_name_list, score_review_name_list, processbar = FALSE)
 {
+  final_freq_table = c(NULL)
   if(processbar)
   {
     bar=0
-    total_bar = nrow(score_review_name_list[1])*length(variable_name_list)
-    pb <- txtProgressBar(min = 0, max = total_bar, char = "=", style = 3) 
+    total_bar = nrow(get(score_review_name_list[1]))*length(variable_name_list)
+    pb <- txtProgressBar(min = 0, max = total_bar+3, char = "=", style = 3) 
   }
-  for(name in score_review_name_list)
+  for(a in 1:length(score_review_name_list))
   {
-    K=length(variable_name_list)
-    test_review <- get(name)
+    test_review <- get(score_review_name_list[a])
     for(i in 1:nrow(test_review))
     {
       test_review_n = test_review[i,]
@@ -64,47 +102,27 @@ imdb_train_data_generate = function(variable_name_list, score_review_name_list, 
         }
       }
       guess_term_freq[length(variable_name_list)+1]=floor(as.numeric(test_review_n[length(test_review_n)]))
+      if(processbar)
+      {
+        bar = bar+1
+        setTxtProgressBar(pb, bar) 
+      }
       final_freq_table = rbind(final_freq_table, guess_term_freq)
+      if(processbar)
+      {
+        bar = bar+1
+        setTxtProgressBar(pb, bar) 
+      }
     }
   }
   
   colnames(final_freq_table) = c(variable_name_list, "imdb_score")
+  if(processbar)
+  {
+    bar = bar+1
+    setTxtProgressBar(pb, bar) 
+  }
+  return(as.data.frame(final_freq_table))
 }
 
-test_table = imdb_train_data_generate(all_variables, score_review_name_list, processbar = TRUE)
-str(final_freq_table)
-
-
-
-
-
-for(i in 1:nrow(termtable)){
-  term <- termtable[i,1]
-  prop <- as.numeric(termtable[i,2])
-  # see if the term is contained in the tweet and save the correct probability
-  if(grepl(term,test_review) && length(which(topK$terms == term))>0){
-    guess_prob[i] <- prop*topK$terms_counts[which(topK$terms == term)]
-    if(length(topK$terms_counts[which(topK$terms == term)])>0)
-    {
-      guess_term_count[i] <- topK$terms_counts[which(topK$terms == term)]
-    }
-    else
-    {
-      guess_term_count[i] <- 0
-    }
-    guess_term[i] <- term
-  }
-  else{
-    guess_prob[i] <- 0
-    if(length(topK$terms_counts[which(topK$terms == term)])>0)
-    {
-      guess_term_count[i] <- topK$terms_counts[which(topK$terms == term)]
-    }
-    else
-    {
-      guess_term_count[i] <- 0
-    }
-    guess_term[i] <- term
-  }
-}
-final_table = cbind(guess_term, guess_prob, guess_term_count)
+#######################################################################################
