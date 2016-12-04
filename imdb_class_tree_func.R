@@ -7,18 +7,16 @@ source("imdb_score_term_func.R")
 
 
 #######################################################################################
-imdb_train_data_generate = function(variable_name_list, score_review_name_list, processbar = FALSE)
+imdb_train_data_generate = function(variable_name_list, total_table, processbar = FALSE)
 {
   final_freq_table = c(NULL)
   if(processbar)
   {
     bar=0
-    total_bar = nrow(get(score_review_name_list[1]))*length(variable_name_list)
+    total_bar = nrow(total_table)*length(variable_name_list)
     pb <- txtProgressBar(min = 0, max = total_bar+3, char = "=", style = 3) 
   }
-  for(a in 1:length(score_review_name_list))
-  {
-    test_review <- get(score_review_name_list[a])
+    test_review = total_table
     for(i in 1:nrow(test_review))
     {
       test_review_n = test_review[i,]
@@ -62,16 +60,17 @@ imdb_train_data_generate = function(variable_name_list, score_review_name_list, 
         bar = bar+1
         setTxtProgressBar(pb, bar) 
       }
-    }
   }
   
   colnames(final_freq_table) = c(variable_name_list, "imdb_score")
+  final_freq_table = as.data.frame(final_freq_table)
+  rownames(final_freq_table) = NULL
   if(processbar)
   {
     bar = bar+1
     setTxtProgressBar(pb, bar) 
   }
-  return(as.data.frame(final_freq_table))
+  return(final_freq_table)
 }
 
 #######################################################################################
@@ -128,12 +127,14 @@ imdb_test_data_generate = function(variable_name_list, test_review, processbar =
     }
   
   colnames(final_freq_table) = c(variable_name_list, "imdb_score")
+  final_freq_table = as.data.frame(final_freq_table)
+  rownames(final_freq_table) = NULL
   if(processbar)
   {
     bar = bar+1
     setTxtProgressBar(pb, bar) 
   }
-  return(as.data.frame(final_freq_table))
+  return(final_freq_table)
 }
 
 

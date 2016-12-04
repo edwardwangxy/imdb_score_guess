@@ -147,13 +147,11 @@ cat(paste("First Guess is score ", guess_table[1,1],"\nSecond Guess is score ", 
 #               Start creating classification tree and analysis               #
 ###############################################################################
 source("imdb_class_tree_func.R") #read classify function to create table for raw data
-score_review_name_list = c(NULL) #Two empty list for future use
 total = c(NULL)
 
 for(i in 2:9)
 {
   score_review_name = paste("score_",i,"_reviews", sep = "")
-  score_review_name_list = c(score_review_name_list, score_review_name)
   total = rbind(total, get(score_review_name))
 } #input all score review objects names as list into "score_review_name_list"
   #and row combind reviews of each movie with scores into "total"
@@ -162,7 +160,7 @@ total_clean_reviews = imdb_score_clean_func(total[,-ncol(total)]) #cleanup all r
 total_table = imdb_score_term_func(total_clean_reviews, K=100) #achieve 100 terms for all reviews
 all_variables = total_table[,1] #achieve only all the terms' name into a list
 
-training_table = imdb_train_data_generate(all_variables, score_review_name_list, processbar = TRUE) #use the function to create a training data table
+training_table = imdb_train_data_generate(all_variables, total, processbar = TRUE) #use the function to create a training data table
 training_table$imdb_score = as.factor(training_table$imdb_score) #change numeric into factor for classification
 test_table = imdb_test_data_generate(all_variables, try_score_review, processbar = TRUE) #use the function to create a training data table
 training_table$imdb_score = as.factor(training_table$imdb_score)

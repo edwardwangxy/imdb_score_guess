@@ -210,13 +210,11 @@ shinyServer(
         
         ###############################
         withProgress(message = 'creating classification trees', value = 0, {
-          score_review_name_list = c(NULL) #Two empty list for future use
           total = c(NULL)
           for(i in 2:9)
           {
             incProgress(1/8, detail = paste("combining ",i,"th reviews", sep=""))
             score_review_name = paste("score_",i,"_reviews", sep = "")
-            score_review_name_list = c(score_review_name_list, score_review_name)
             total = rbind(total, get(score_review_name))
           } #input all score review objects names as list into "score_review_name_list"
           #and row combind reviews of each movie with scores into "total"
@@ -225,7 +223,7 @@ shinyServer(
           total_clean_reviews = imdb_score_clean_func(total[,-ncol(total)]) #cleanup all reviews
           total_table = imdb_score_term_func(total_clean_reviews, K=100) #achieve 100 terms for all reviews
           all_variables = total_table[,1] #achieve only all the terms' name into a list
-          training_table = imdb_train_data_generate(all_variables, score_review_name_list, processbar = FALSE) #use the function to create a training data table
+          training_table = imdb_train_data_generate(all_variables, total, processbar = FALSE) #use the function to create a training data table
           incProgress(1/6, detail = paste("creating test freq table", sep=""))
           training_table$imdb_score = as.factor(training_table$imdb_score) #change numeric into factor for classification
           test_table = imdb_test_data_generate(all_variables, try_score_review, processbar = FALSE) #use the function to create a training data table
