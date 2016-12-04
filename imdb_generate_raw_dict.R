@@ -69,7 +69,7 @@ generate_raw_dict <- function(page, movie)
   source("imdb_score_clean_func.R")
   source("imdb_score_term_func.R")
   
-  K_input = 50
+  'K_input = 50
   
   dictionary_name <- sprintf("dict-%d-%d-%d.Rda",max_movies_pick,pages_each_movie,K_input)
   dict_save_location <- "dictionary"
@@ -88,7 +88,7 @@ generate_raw_dict <- function(page, movie)
     setTxtProgressBar(pb3, i)
   }
   close(pb3)
-  save(list = objects_name_to_save, file=sprintf("%s/%s", dict_save_location, dictionary_name))
+  save(list = objects_name_to_save, file=sprintf("%s/%s", dict_save_location, dictionary_name))'
 }
 
 #########################################################################
@@ -99,7 +99,7 @@ for(movie_choose in movie_list)
 {
   for(pages_choose in pages_list)
   {
-    generate_raw_dict(page = 1, movie = 20)
+    generate_raw_dict(page = 10, movie = 30)
   }
 }
 
