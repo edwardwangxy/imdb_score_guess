@@ -7,7 +7,7 @@ library(XML)
 
 #########################################################################
 #selecing subset from dataset
-set_review_num = 400
+set_review_num = 100
 imdb_data <- read.csv("movie_metadata.csv")
 imdb_data_select <- imdb_data[order(-imdb_data$imdb_score),c("imdb_score","movie_imdb_link","movie_title","num_user_for_reviews")]
 imdb_data_select <- subset(imdb_data_select, num_user_for_reviews >= set_review_num)
@@ -43,21 +43,24 @@ generate_raw_dict <- function(page, movie)
   for(n in 2:9)
   {
     link_list_name = paste("imdb_score_",n,sep="")
-    for(i in 1:min(nrow(get(link_list_name)),max_movies_pick))
+    for(i in 1:min(nrow(get(link_list_name)),max_movies_pick)) #do not achieve more than available movies
     {
       progress_bar_counting = progress_bar_counting + 1
-      if(i ==1)
+      if(i ==1) #create empty list for later use
       {
         review_final = list(NULL)
+        review_score = list(NULL)
       }
       review_test = myimdb.rangereviews(get(link_list_name)$movie_imdb_link[[i]], range = pages_each_movie)
       setTxtProgressBar(pb2, progress_bar_counting)
-      review_final = c(review_final, review_test)
+      review_score = c(review_test, get(link_list_name)$imdb_score[i])
+      review_final = rbind(review_final, review_score)
     }
     review_name = paste("score_",n,"_reviews", sep = "")
-    raw_save_list = c(raw_save_list, review_name)
+    raw_save_list = c(raw_save_list, review_name, link_list_name)
+    review_final = review_final[-1,] #get rid of NULL row
     assign(review_name, review_final)
-    #rm(list = c(link_list_name))
+    #rm(list = c(link_list_name)) 
   }
   close(pb2)
   rawdata_name <- sprintf("rawdata-%d-%d.Rda",max_movies_pick,pages_each_movie)
@@ -96,7 +99,7 @@ for(movie_choose in movie_list)
 {
   for(pages_choose in pages_list)
   {
-    generate_raw_dict(page = pages_choose, movie = movie_choose)
+    generate_raw_dict(page = 1, movie = 20)
   }
 }
 

@@ -22,6 +22,9 @@ shinyUI(
         sliderInput("pages_to_guess", label = "review pages for guessing",
                     min = 10, max = 80, value = 50, step = 10),
         
+        sliderInput("no_tree", label = "# of trees in forest",
+                    min = 100, max = 2000, value = 1000, step = 100),
+        
         textInput("search_movie", "Search a movie", 
                   placeholder = "enter movie name"),
         
@@ -48,7 +51,9 @@ shinyUI(
           tabPanel("Score_6", plotOutput("plot1_5")),
           tabPanel("Score_7", plotOutput("plot1_6")),
           tabPanel("Score_8", plotOutput("plot1_7")),
-          tabPanel("Score_9", plotOutput("plot1_8"))
+          tabPanel("Score_9", plotOutput("plot1_8")),
+          tabPanel("Tree", plotOutput("class_tree")),
+          tabPanel("Pruned_Tree", plotOutput("pruned_tree"))
         ),
         tabBox(title = "Picked Movie",
             id = "piccloud", height = "500px", width = 6,
@@ -65,9 +70,15 @@ shinyUI(
         box(title = "Search Result",
             id = "search", height = "500px", width = 6
             ,DT::dataTableOutput('x1')),
-        box(title = "Search Result",
+        box(title = "Guess Result",
             id = "result", height = "500px", width = 6,
-            verbatimTextOutput('info'))
+            verbatimTextOutput('info')),
+        box(title = "Full Term Table",
+            id = "result", height = "500px", width = 6,
+            verbatimTextOutput('ftt')),
+        box(title = "View Random Forest",
+            id = "result", height = "500px", width = 6,
+            verbatimTextOutput('vrf'))
       )
     )
   ))
