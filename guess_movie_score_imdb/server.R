@@ -213,34 +213,34 @@ shinyServer(
           total = c(NULL)
           for(i in 2:9)
           {
-            incProgress(1/8, detail = paste("combining ",i,"th reviews", sep=""))
+            incProgress(1/14, detail = paste("combining ",i,"th reviews", sep=""))
             score_review_name = paste("score_",i,"_reviews", sep = "")
             total = rbind(total, get(score_review_name))
           } #input all score review objects names as list into "score_review_name_list"
           #and row combind reviews of each movie with scores into "total"
           
-          incProgress(1/6, detail = paste("creating training freq table", sep=""))
+          incProgress(1/14, detail = paste("creating training freq table", sep=""))
           total_clean_reviews = imdb_score_clean_func(total[,-ncol(total)]) #cleanup all reviews
           total_table = imdb_score_term_func(total_clean_reviews, K=100) #achieve 100 terms for all reviews
           all_variables = total_table[,1] #achieve only all the terms' name into a list
           training_table = imdb_train_data_generate(all_variables, total, processbar = FALSE) #use the function to create a training data table
-          incProgress(1/6, detail = paste("creating test freq table", sep=""))
+          incProgress(1/14, detail = paste("creating test freq table", sep=""))
           training_table$imdb_score = as.factor(training_table$imdb_score) #change numeric into factor for classification
           test_table = imdb_test_data_generate(all_variables, try_score_review, processbar = FALSE) #use the function to create a training data table
-          incProgress(1/6, detail = paste("create class-tree", sep=""))
+          incProgress(1/14, detail = paste("create class-tree", sep=""))
           fit <- rpart(imdb_score ~ .,
                        method="class", data=training_table,
                        control = rpart.control(minsplit=20, cp=0.001))
-          incProgress(1/6, detail = paste("create pruned-tree", sep=""))
+          incProgress(1/14, detail = paste("create pruned-tree", sep=""))
           output$class_tree <- renderPlot({prp(fit, main="Classification Tree", fallen.leaves=TRUE, shadow.col="gray", branch.lty=2, faclen=0, trace=1, split.cex=1.2, split.prefix="Is ", split.suffix="?", split.box.col="lightgray", split.border.col="darkgray", split.round=.5)})
           pfit<- prune(fit, cp=fit$cptable[which.min(fit$cptable[,"xerror"]),"CP"])
-          incProgress(1/6, detail = paste("Guessing with trees", sep=""))
+          incProgress(1/14, detail = paste("Guessing with trees", sep=""))
           output$pruned_tree <- renderPlot({prp(pfit, main="Pruned Tree", fallen.leaves=TRUE, shadow.col="gray", branch.lty=2, faclen=0, trace=1, split.cex=1.2, split.prefix="Is ", split.suffix="?", split.box.col="lightgray", split.border.col="darkgray", split.round=.5)})
           predict = predict(fit, test_table, type="class")
           predict = as.character(predict)
           predict2 = predict(pfit, test_table, type="class")
           predict2 = as.character(predict2)
-          incProgress(1/6, detail = paste("random forest processing", sep=""))
+          incProgress(1/14, detail = paste("random forest processing", sep=""))
           rownames(training_table) = NULL
           ffit <- randomForest(imdb_score ~ .,ntree=isolate(input$no_tree),data=training_table)
           predict3 = as.character(predict(ffit, test_table, type="response"))
