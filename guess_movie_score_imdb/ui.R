@@ -20,7 +20,7 @@ shinyUI(
                     min = 10, max = 80, value = 50, step = 10),
         
         sliderInput("reviews_to_guess", label = "reviews for guessing",
-                    min = 100, max = 5000, value = 1000, step = 100),
+                    min = 100, max = 2000, value = 1000, step = 100),
         
         sliderInput("no_tree", label = "# of trees in forest",
                     min = 100, max = 2000, value = 1000, step = 100),

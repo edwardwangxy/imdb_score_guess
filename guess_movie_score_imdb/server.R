@@ -130,14 +130,14 @@ shinyServer(
     
     output$info = renderPrint({
       input$guess_btn
+      rm(list = ls())
       s = isolate(input$x1_rows_selected)
       if(length(s)<1){cat("Please search and select a movie to guess\n\n")}
       else{
-        #s = input$x1_rows_selected
         withProgress(message = 'Starting the guess progress', value = 0, {
           search_table = myimdb.search(isolate(input$search_movie))
           incProgress(1/3, detail = "")
-          rawdata_url = paste("rawdata/",input$rawdata, sep ="")
+          rawdata_url = paste("rawdata/",isolate(input$rawdata), sep ="")
           incProgress(1/3, detail = "")
           env = load(rawdata_url)
           incProgress(1/3, detail = "")
@@ -164,7 +164,7 @@ shinyServer(
           {
             review_name = paste("score_",i,"_reviews",sep = "")
             term_name = paste("score_",i,"_term",sep = "")
-            clean_reviews = imdb_score_clean_func(get(review_name))
+            clean_reviews = imdb_score_clean_func(get(review_name)[,-2])
             table = imdb_score_term_func(clean_reviews, K=K_input)
             assign(term_name, table)
             incProgress(1/9, detail = paste("Generating score_", i," term table", sep = ""))
@@ -177,7 +177,7 @@ shinyServer(
 
         #################################
         review_prob = c(NULL)
-        withProgress(message = 'Guessing movie score with term', value = 0, {
+        withProgress(message = "Guessing movie score with term", value = 0, {
           for(i in 2:9)
           {
             term_name = paste("score_",i,"_term",sep="")
@@ -209,41 +209,30 @@ shinyServer(
         guess_table <- guess_table[order(guess_table[,2],decreasing=TRUE),]
         
         ###############################
-        withProgress(message = 'creating classification trees', value = 0, {
-          total = c(NULL)
-          for(i in 2:9)
-          {
-            incProgress(1/14, detail = paste("combining ",i,"th reviews", sep=""))
-            score_review_name = paste("score_",i,"_reviews", sep = "")
-          } #input all score review objects names as list into "score_review_name_list"
-          #and row combind reviews of each movie with scores into "total"
-          
-          incProgress(1/14, detail = paste("creating training freq table", sep=""))
-          incProgress(1/14, detail = paste("creating test freq table", sep=""))
-          training_table <- na.omit(training_table)
-          training_table$imdb_score = as.factor(training_table$imdb_score) #change numeric into factor for classification
+       withProgress(message = "creating classification trees", value = 0, {
+          incProgress(1/5, detail = paste("creating test freq table", sep=""))
           test_table = imdb_test_data_generate(all_variables, try_score_review, processbar = FALSE) #use the function to create a training data table
-          incProgress(1/14, detail = paste("create class-tree", sep=""))
+          incProgress(1/5, detail = paste("create class-tree", sep=""))
           fit <- rpart(imdb_score ~ .,
                        method="class", data=training_table,
                        control = rpart.control(minsplit=20, cp=0.001))
-          incProgress(1/14, detail = paste("create pruned-tree", sep=""))
+          incProgress(1/5, detail = paste("create pruned-tree", sep=""))
           output$class_tree <- renderPlot({prp(fit, main="Classification Tree", fallen.leaves=TRUE, shadow.col="gray", branch.lty=2, faclen=0, trace=1, split.cex=1.2, split.prefix="Is ", split.suffix="?", split.box.col="lightgray", split.border.col="darkgray", split.round=.5)})
           pfit<- prune(fit, cp=fit$cptable[which.min(fit$cptable[,"xerror"]),"CP"])
-          incProgress(1/14, detail = paste("Guessing with trees", sep=""))
+          incProgress(1/5, detail = paste("Guessing with trees", sep=""))
           output$pruned_tree <- renderPlot({prp(pfit, main="Pruned Tree", fallen.leaves=TRUE, shadow.col="gray", branch.lty=2, faclen=0, trace=1, split.cex=1.2, split.prefix="Is ", split.suffix="?", split.box.col="lightgray", split.border.col="darkgray", split.round=.5)})
           predict = predict(fit, test_table, type="class")
           predict = as.character(predict)
           predict2 = predict(pfit, test_table, type="class")
           predict2 = as.character(predict2)
-          incProgress(1/14, detail = paste("random forest processing", sep=""))
+          incProgress(1/5, detail = paste("random forest processing", sep=""))
           rownames(training_table) = NULL
           ffit <- randomForest(imdb_score ~ .,ntree=isolate(input$no_tree),data=training_table)
           predict3 = as.character(predict(ffit, test_table, type="response"))
           })
         ###############################
         
-        cat(paste("Computer Guess of movie <",search_table[s,1],">'s score:\n", sep=""))
+        cat(paste("Computer Guess of movie <",search_table[s,1],">s score:\n", sep=""))
         cat("\n================Guess with Term Table==================\n")
         cat(paste("First Guess is score ", guess_table[1,1],"\nSecond Guess is score ", guess_table[2,1]))
         cat("\n=======================================================\n")

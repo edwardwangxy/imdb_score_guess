@@ -103,7 +103,7 @@ rm(list = ls()[-grep(paste(raw_save_list,collapse="|"), ls())])  #remove all the
 #                       Start creating term tables                            #
 ###############################################################################
 #create term table for different scores and save to dictionary
-load("dictionary/rawdata/rawdata-20-1000.Rda") #using this function to load data directly
+load("dictionary/rawdata/rawdata-10-100.Rda") #using this function to load data directly
 source("imdb_score_clean_func.R")
 source("imdb_score_term_func.R")
 
