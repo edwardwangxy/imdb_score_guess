@@ -1,12 +1,5 @@
-#' ---
-#' title: "Score Guessing with imdb reviews"
-#' author: "Xiangyu Wang"
-#' date: "Dec 1st, 2016"
-#' ---
-#' #### based on data: https://www.kaggle.com/deepmatrix/imdb-5000-movie-dataset
-#' #### [Shiny dashboard version](https://uwwxy.shinyapps.io/guess_movie_score_imdb/)
-#' 
-#' ## Start with loading require libraries
+# data source: https://www.kaggle.com/deepmatrix/imdb-5000-movie-dataset
+
 library(rvest)
 library(RColorBrewer)
 library(SnowballC)
@@ -15,9 +8,12 @@ library(wordcloud)
 library(XML)
 library(RColorBrewer)
 library(rpart.plot)
-#' ***
-#' ## Start picking movies from dataset 
-#' 
+###############################################################################
+#                       Start picking movies from dataset                     #
+###############################################################################
+#selecing subset from dataset
+#Set the minimum size of reviews of movie to pick as training set
+#read the table file and grabe all the links of movies with reivews larger than the limit
 
 set_review_num = 200 #setting minimum reviews for picking movies
 imdb_data <- read.csv("movie_metadata.csv") #read the data set
@@ -45,9 +41,10 @@ close(pb)
 
 dict_save_location <- "dictionary" #save location of rawdata and term tables
 source("imdb_review_scraping_func.R")
+source("imdb_class_tree_func.R") #read classify function to create table for raw data
 #choose inputs here
-pages_each_movie = 1
-max_movies_pick = 10
+reviews_each_movie = 1000
+max_movies_pick = 20
 total_movie_count = 0
 ####
 progress_bar_counting = 0
@@ -69,7 +66,7 @@ for(n in 2:9)
       review_final = list(NULL)
       review_score = list(NULL)
     }
-    review_test = myimdb.rangereviews(get(link_list_name)$movie_imdb_link[[i]], range = pages_each_movie)
+    review_test = myimdb.reviews.full(get(link_list_name)$movie_imdb_link[[i]], max_reviews = reviews_each_movie)
     setTxtProgressBar(pb2, progress_bar_counting)
     review_score = c(review_test, get(link_list_name)$imdb_score[i])
     review_final = rbind(review_final, review_score)
@@ -81,8 +78,24 @@ for(n in 2:9)
   #rm(list = c(link_list_name)) 
 }
 close(pb2)
-rawdata_name <- sprintf("rawdata-%d-%d.Rda",max_movies_pick,pages_each_movie)
-raw_save_list = c(raw_save_list,"max_movies_pick","pages_each_movie")
+total = c(NULL)
+pb5 <- txtProgressBar(min = 0, max = 8, char = "=", style = 3)
+for(i in 2:9)
+{
+  score_review_name = paste("score_",i,"_reviews", sep = "")
+  total = rbind(total, get(score_review_name))
+  setTxtProgressBar(pb5, i)
+} #input all score review objects names as list into "score_review_name_list"
+#and row combind reviews of each movie with scores into "total"
+close(pb5)
+total_clean_reviews = imdb_score_clean_func(total[,-ncol(total)]) #cleanup all reviews
+total_table = imdb_score_term_func(total_clean_reviews, K=100) #achieve 100 terms for all reviews
+all_variables = total_table[,1] #achieve only all the terms' name into a list
+
+training_table = imdb_train_data_generate(all_variables, total, processbar = TRUE) #use the function to create a training data table
+training_table$imdb_score = as.factor(training_table$imdb_score) #change numeric into factor for classification
+rawdata_name <- sprintf("rawdata-%d-%d.Rda",max_movies_pick,reviews_each_movie)
+raw_save_list = c(raw_save_list,"max_movies_pick","all_variables","training_table")
 save(list = raw_save_list, file=sprintf("%s/rawdata/%s", dict_save_location,rawdata_name)) #save rawdatas into files
 rm(list = ls()[-grep(paste(raw_save_list,collapse="|"), ls())])  #remove all the useless object
 
@@ -90,13 +103,13 @@ rm(list = ls()[-grep(paste(raw_save_list,collapse="|"), ls())])  #remove all the
 #                       Start creating term tables                            #
 ###############################################################################
 #create term table for different scores and save to dictionary
-load("dictionary/rawdata/rawdata-30-2.Rda") #using this function to load data directly
+load("dictionary/rawdata/rawdata-20-1000.Rda") #using this function to load data directly
 source("imdb_score_clean_func.R")
 source("imdb_score_term_func.R")
 
 K_input = 50
 
-dictionary_name <- sprintf("dict-%d-%d-%d.Rda",max_movies_pick,pages_each_movie,K_input)
+dictionary_name <- sprintf("dict-%d-%d.Rda",max_movies_pick,K_input)
 dict_save_location <- "dictionary"
 
 pb3 <- txtProgressBar(min = 0, max = 9, char = "=", style = 3)
@@ -105,7 +118,7 @@ for(i in 2:9)
 {
   review_name = paste("score_",i,"_reviews",sep = "")
   term_name = paste("score_",i,"_term",sep = "")
-  clean_reviews = imdb_score_clean_func(get(review_name)[,-ncol(get(review_name))])
+  clean_reviews = imdb_score_clean_func(get(review_name)[,-2])
   table = imdb_score_term_func(clean_reviews, K=K_input)
   assign(term_name, table)
   #rm(list = c(review_name))
@@ -113,6 +126,7 @@ for(i in 2:9)
   setTxtProgressBar(pb3, i)
 }
 close(pb3)
+objects_name_to_save = c(objects_name_to_save,"all_variables","training_table")
 save(list = objects_name_to_save, file=sprintf("%s/%s", dict_save_location, dictionary_name))
 rm(list = ls()[-grep(paste(objects_name_to_save,collapse="|"), ls())])
 
@@ -124,9 +138,9 @@ rm(list = ls()[-grep(paste(objects_name_to_save,collapse="|"), ls())])
 source("imdb_guess_review_func.R")
 source("imdb_review_scraping_func.R")
 test_web_url = "http://www.imdb.com/title/tt0209144/?ref_=fn_al_tt_1" #<westword> imdb_url
-grab_pages = 50
+max_reviews_test = 1000
 review_prob = c(NULL)
-try_score_review = myimdb.rangereviews(test_web_url, grab_pages, progress_bar=TRUE)
+try_score_review = myimdb.reviews.full(test_web_url, max_reviews_test)
 
 pb4 <- txtProgressBar(min = 0, max = 9, char = "=", style = 3)
 for(i in 2:9)
@@ -151,23 +165,9 @@ cat(paste("First Guess is score ", guess_table[1,1],"\nSecond Guess is score ", 
 #               Start creating classification tree and analysis               #
 ###############################################################################
 source("imdb_class_tree_func.R") #read classify function to create table for raw data
-total = c(NULL)
 
-for(i in 2:9)
-{
-  score_review_name = paste("score_",i,"_reviews", sep = "")
-  total = rbind(total, get(score_review_name))
-} #input all score review objects names as list into "score_review_name_list"
-  #and row combind reviews of each movie with scores into "total"
-
-total_clean_reviews = imdb_score_clean_func(total[,-ncol(total)]) #cleanup all reviews
-total_table = imdb_score_term_func(total_clean_reviews, K=100) #achieve 100 terms for all reviews
-all_variables = total_table[,1] #achieve only all the terms' name into a list
-
-training_table = imdb_train_data_generate(all_variables, total, processbar = TRUE) #use the function to create a training data table
-training_table$imdb_score = as.factor(training_table$imdb_score) #change numeric into factor for classification
 test_table = imdb_test_data_generate(all_variables, try_score_review, processbar = TRUE) #use the function to create a training data table
-training_table$imdb_score = as.factor(training_table$imdb_score)
+
 
 #create classification trees
 fit <- rpart(imdb_score ~ .,
@@ -233,3 +233,4 @@ ffit <- randomForest(imdb_score ~ .,
 print(fit) # view results 
 importance(ffit)
 as.character(predict(ffit, test_table, type="response"))
+rm(list = ls())

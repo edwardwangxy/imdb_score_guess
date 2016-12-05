@@ -12,15 +12,15 @@ shinyUI(
     dashboardHeader(title = "Guess Movie Score"),
     dashboardSidebar(
       fluidPage(
-        load(url("http://www.uwwxy.com/rdata/filelist.Rda")),
+        load("rawdata/filelist.Rda"),
         selectInput('rawdata', 'Pick Data', filelist,
                     selected=filelist[1]),
         
         sliderInput("k_term", label = "choose # of terms",
                     min = 10, max = 80, value = 50, step = 10),
         
-        sliderInput("pages_to_guess", label = "review pages for guessing",
-                    min = 10, max = 80, value = 50, step = 10),
+        sliderInput("reviews_to_guess", label = "reviews for guessing",
+                    min = 100, max = 5000, value = 1000, step = 100),
         
         sliderInput("no_tree", label = "# of trees in forest",
                     min = 100, max = 2000, value = 1000, step = 100),
@@ -32,7 +32,7 @@ shinyUI(
                      label = "Search"),
         
         actionButton('guess_btn',
-                     label = "start guess")
+                     label = "start guess"),
         
 ###########################################################################
 

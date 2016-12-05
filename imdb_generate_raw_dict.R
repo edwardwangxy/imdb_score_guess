@@ -25,13 +25,16 @@ for(i in 2:9)
 close(pb)
 
 
-generate_raw_dict <- function(page, movie)
+generate_raw_dict <- function(movie, reviews)
 {
-  dict_save_location <- "dictionary"
+  dict_save_location <- "dictionary" #save location of rawdata and term tables
   source("imdb_review_scraping_func.R")
-  pages_each_movie = page
+  source("imdb_class_tree_func.R") #read classify function to create table for raw data
+  #choose inputs here
+  reviews_each_movie = reviews
   max_movies_pick = movie
   total_movie_count = 0
+  ####
   progress_bar_counting = 0
   for(n in 2:9)
   {
@@ -51,7 +54,7 @@ generate_raw_dict <- function(page, movie)
         review_final = list(NULL)
         review_score = list(NULL)
       }
-      review_test = myimdb.rangereviews(get(link_list_name)$movie_imdb_link[[i]], range = pages_each_movie)
+      review_test = myimdb.reviews.full(get(link_list_name)$movie_imdb_link[[i]], max_reviews = reviews_each_movie)
       setTxtProgressBar(pb2, progress_bar_counting)
       review_score = c(review_test, get(link_list_name)$imdb_score[i])
       review_final = rbind(review_final, review_score)
@@ -63,15 +66,32 @@ generate_raw_dict <- function(page, movie)
     #rm(list = c(link_list_name)) 
   }
   close(pb2)
-  rawdata_name <- sprintf("rawdata-%d-%d.Rda",max_movies_pick,pages_each_movie)
-  raw_save_list = c(raw_save_list,"max_movies_pick","pages_each_movie")
-  save(list = raw_save_list, file=sprintf("%s/rawdata/%s", dict_save_location,rawdata_name))
+  total = c(NULL)
+  pb5 <- txtProgressBar(min = 0, max = 8, char = "=", style = 3)
+  for(i in 2:9)
+  {
+    score_review_name = paste("score_",i,"_reviews", sep = "")
+    total = rbind(total, get(score_review_name))
+    setTxtProgressBar(pb5, i)
+  } #input all score review objects names as list into "score_review_name_list"
+  #and row combind reviews of each movie with scores into "total"
+  close(pb5)
+  total_clean_reviews = imdb_score_clean_func(total[,-ncol(total)]) #cleanup all reviews
+  total_table = imdb_score_term_func(total_clean_reviews, K=100) #achieve 100 terms for all reviews
+  all_variables = total_table[,1] #achieve only all the terms' name into a list
+  
+  training_table = imdb_train_data_generate(all_variables, total, processbar = TRUE) #use the function to create a training data table
+  training_table$imdb_score = as.factor(training_table$imdb_score) #change numeric into factor for classification
+  rawdata_name <- sprintf("rawdata-%d-%d.Rda",max_movies_pick,reviews_each_movie)
+  raw_save_list = c(raw_save_list,"max_movies_pick","all_variables","training_table")
+  save(list = raw_save_list, file=sprintf("%s/rawdata/%s", dict_save_location,rawdata_name)) #save rawdatas into files
+  rm(list = ls()[-grep(paste(raw_save_list,collapse="|"), ls())])  #remove all the useless object
   'source("imdb_score_clean_func.R")
   source("imdb_score_term_func.R")
   
   K_input = 50
   
-  dictionary_name <- sprintf("dict-%d-%d-%d.Rda",max_movies_pick,pages_each_movie,K_input)
+  dictionary_name <- sprintf("dict-%d-%d.Rda",max_movies_pick,K_input)
   dict_save_location <- "dictionary"
   
   pb3 <- txtProgressBar(min = 0, max = 9, char = "=", style = 3)
@@ -80,21 +100,22 @@ generate_raw_dict <- function(page, movie)
   {
     review_name = paste("score_",i,"_reviews",sep = "")
     term_name = paste("score_",i,"_term",sep = "")
-    clean_reviews = imdb_score_clean_func(get(review_name))
+    clean_reviews = imdb_score_clean_func(get(review_name)[,-2])
     table = imdb_score_term_func(clean_reviews, K=K_input)
     assign(term_name, table)
-    rm(list = c(review_name))
-    objects_name_to_save = c(objects_name_to_save,term_name)
+    #rm(list = c(review_name))
+    objects_name_to_save = c(objects_name_to_save,review_name, term_name)
     setTxtProgressBar(pb3, i)
   }
   close(pb3)
-  save(list = objects_name_to_save, file=sprintf("%s/%s", dict_save_location, dictionary_name))'
+  save(list = objects_name_to_save, file=sprintf("%s/%s", dict_save_location, dictionary_name))
+  rm(list = ls()[-grep(paste(objects_name_to_save,collapse="|"), ls())])'
 }
 
 #########################################################################
 #start achieving all reviews for each score level and save it into file
 
-generate_raw_dict(page = 10, movie = 30)
+generate_raw_dict(20,300)
 
 
 ########################################################################

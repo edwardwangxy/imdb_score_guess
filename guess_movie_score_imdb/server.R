@@ -11,9 +11,9 @@ shinyServer(
     ###############################################################
     output$plot1_1 <- renderPlot({
         withProgress(message = 'Creating score_2 wordcloud', value = 0, {
-          rawdata_url = paste("http://www.uwwxy.com/rdata/",input$rawdata, sep ="")
+          rawdata_url = paste("rawdata/",input$rawdata, sep ="")
           incProgress(1/4, detail = "")
-          env = load(url(rawdata_url))
+          env = load(rawdata_url)
           incProgress(1/4, detail = "")
           review_var_name = paste("score_2_reviews", sep = "")
           incProgress(1/4, detail = "")
@@ -24,9 +24,9 @@ shinyServer(
     test_inside = "test_inside"
     output$plot1_2 <- renderPlot({
       withProgress(message = 'Creating score_3 wordcloud', value = 0, {
-        rawdata_url = paste("http://www.uwwxy.com/rdata/",input$rawdata, sep ="")
+        rawdata_url = paste("rawdata/",input$rawdata, sep ="")
         incProgress(1/4, detail = "")
-        env = load(url(rawdata_url))
+        env = load(rawdata_url)
         incProgress(1/4, detail = "")
         review_var_name = paste("score_3_reviews", sep = "")
         incProgress(1/2, detail = "")
@@ -37,9 +37,9 @@ shinyServer(
     
     output$plot1_3 <- renderPlot({
       withProgress(message = 'Creating score_4 wordcloud', value = 0, {
-        rawdata_url = paste("http://www.uwwxy.com/rdata/",input$rawdata, sep ="")
+        rawdata_url = paste("rawdata/",input$rawdata, sep ="")
         incProgress(1/4, detail = "")
-        env = load(url(rawdata_url))
+        env = load(rawdata_url)
         incProgress(1/4, detail = "")
         review_var_name = paste("score_4_reviews", sep = "")
         incProgress(1/2, detail = "")
@@ -50,9 +50,9 @@ shinyServer(
     
     output$plot1_4 <- renderPlot({
       withProgress(message = 'Creating score_5 wordcloud', value = 0, {
-        rawdata_url = paste("http://www.uwwxy.com/rdata/",input$rawdata, sep ="")
+        rawdata_url = paste("rawdata/",input$rawdata, sep ="")
         incProgress(1/4, detail = "")
-        env = load(url(rawdata_url))
+        env = load(rawdata_url)
         incProgress(1/4, detail = "")
         review_var_name = paste("score_5_reviews", sep = "")
         incProgress(1/2, detail = "")
@@ -63,9 +63,9 @@ shinyServer(
     
     output$plot1_5 <- renderPlot({
       withProgress(message = 'Creating score_6 wordcloud', value = 0, {
-        rawdata_url = paste("http://www.uwwxy.com/rdata/",input$rawdata, sep ="")
+        rawdata_url = paste("rawdata/",input$rawdata, sep ="")
         incProgress(1/4, detail = "")
-        env = load(url(rawdata_url))
+        env = load(rawdata_url)
         incProgress(1/4, detail = "")
         review_var_name = paste("score_6_reviews", sep = "")
         incProgress(1/2, detail = "")
@@ -76,9 +76,9 @@ shinyServer(
     
     output$plot1_6 <- renderPlot({
       withProgress(message = 'Creating score_7 wordcloud', value = 0, {
-        rawdata_url = paste("http://www.uwwxy.com/rdata/",input$rawdata, sep ="")
+        rawdata_url = paste("rawdata/",input$rawdata, sep ="")
         incProgress(1/4, detail = "")
-        env = load(url(rawdata_url))
+        env = load(rawdata_url)
         incProgress(1/4, detail = "")
         review_var_name = paste("score_7_reviews", sep = "")
         incProgress(1/2, detail = "")
@@ -89,9 +89,9 @@ shinyServer(
     
     output$plot1_7 <- renderPlot({
       withProgress(message = 'Creating score_8 wordcloud', value = 0, {
-        rawdata_url = paste("http://www.uwwxy.com/rdata/",input$rawdata, sep ="")
+        rawdata_url = paste("rawdata/",input$rawdata, sep ="")
         incProgress(1/4, detail = "")
-        env = load(url(rawdata_url))
+        env = load(rawdata_url)
         incProgress(1/4, detail = "")
         review_var_name = paste("score_8_reviews", sep = "")
         incProgress(1/2, detail = "")
@@ -102,9 +102,9 @@ shinyServer(
     
     output$plot1_8 <- renderPlot({
       withProgress(message = 'Creating score_9 wordcloud', value = 0, {
-        rawdata_url = paste("http://www.uwwxy.com/rdata/",input$rawdata, sep ="")
+        rawdata_url = paste("rawdata/",input$rawdata, sep ="")
         incProgress(1/4, detail = "")
-        env = load(url(rawdata_url))
+        env = load(rawdata_url)
         incProgress(1/4, detail = "")
         review_var_name = paste("score_9_reviews", sep = "")
         incProgress(1/2, detail = "")
@@ -137,9 +137,9 @@ shinyServer(
         withProgress(message = 'Starting the guess progress', value = 0, {
           search_table = myimdb.search(isolate(input$search_movie))
           incProgress(1/3, detail = "")
-          rawdata_url = paste("http://www.uwwxy.com/rdata/",input$rawdata, sep ="")
+          rawdata_url = paste("rawdata/",input$rawdata, sep ="")
           incProgress(1/3, detail = "")
-          env = load(url(rawdata_url))
+          env = load(rawdata_url)
           incProgress(1/3, detail = "")
         })
         #################################
@@ -147,11 +147,11 @@ shinyServer(
         withProgress(message = paste("Retrieving Movie <",search_table[s,1],">'s reviews"), value = 0, {
           test_web_url = search_table[s,2]
           incProgress(1/4, detail = "")
-          grab_pages = isolate(input$pages_to_guess)
+          reviews_pages = isolate(input$reviews_to_guess)
           incProgress(1/4, detail = "")
           review_prob = c(NULL)
           incProgress(1/4, detail = "")
-          try_score_review = myimdb.rangereviews(test_web_url, grab_pages)
+          try_score_review = myimdb.reviews.full(test_web_url, reviews_pages)
           incProgress(1/4, detail = "")
         })
         output$plot2 <- renderPlot({myfunc.wordcloud(try_score_review, remove_words = c(stopwords("english"),"film","movie","can","films","movies","will","scenes","just","one","like"))
@@ -215,16 +215,12 @@ shinyServer(
           {
             incProgress(1/14, detail = paste("combining ",i,"th reviews", sep=""))
             score_review_name = paste("score_",i,"_reviews", sep = "")
-            total = rbind(total, get(score_review_name))
           } #input all score review objects names as list into "score_review_name_list"
           #and row combind reviews of each movie with scores into "total"
           
           incProgress(1/14, detail = paste("creating training freq table", sep=""))
-          total_clean_reviews = imdb_score_clean_func(total[,-ncol(total)]) #cleanup all reviews
-          total_table = imdb_score_term_func(total_clean_reviews, K=100) #achieve 100 terms for all reviews
-          all_variables = total_table[,1] #achieve only all the terms' name into a list
-          training_table = imdb_train_data_generate(all_variables, total, processbar = FALSE) #use the function to create a training data table
           incProgress(1/14, detail = paste("creating test freq table", sep=""))
+          training_table <- na.omit(training_table)
           training_table$imdb_score = as.factor(training_table$imdb_score) #change numeric into factor for classification
           test_table = imdb_test_data_generate(all_variables, try_score_review, processbar = FALSE) #use the function to create a training data table
           incProgress(1/14, detail = paste("create class-tree", sep=""))
