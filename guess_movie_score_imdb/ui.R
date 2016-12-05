@@ -32,7 +32,8 @@ shinyUI(
                      label = "Search"),
         
         actionButton('guess_btn',
-                     label = "start guess"),
+                     label = "start guess")
+        
         
 ###########################################################################
 
