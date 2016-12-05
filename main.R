@@ -1,5 +1,12 @@
-# data source: https://www.kaggle.com/deepmatrix/imdb-5000-movie-dataset
-
+#' ---
+#' title: "Score Guessing with imdb reviews"
+#' author: "Xiangyu Wang"
+#' date: "Dec 1st, 2016"
+#' ---
+#' #### based on data: https://www.kaggle.com/deepmatrix/imdb-5000-movie-dataset
+#' #### [Shiny dashboard version](https://uwwxy.shinyapps.io/guess_movie_score_imdb/)
+#' 
+#' ## Start with loading require libraries
 library(rvest)
 library(RColorBrewer)
 library(SnowballC)
@@ -8,12 +15,9 @@ library(wordcloud)
 library(XML)
 library(RColorBrewer)
 library(rpart.plot)
-###############################################################################
-#                       Start picking movies from dataset                     #
-###############################################################################
-#selecing subset from dataset
-#Set the minimum size of reviews of movie to pick as training set
-#read the table file and grabe all the links of movies with reivews larger than the limit
+#' ***
+#' ## Start picking movies from dataset 
+#' 
 
 set_review_num = 200 #setting minimum reviews for picking movies
 imdb_data <- read.csv("movie_metadata.csv") #read the data set

@@ -66,10 +66,10 @@ generate_raw_dict <- function(page, movie)
   rawdata_name <- sprintf("rawdata-%d-%d.Rda",max_movies_pick,pages_each_movie)
   raw_save_list = c(raw_save_list,"max_movies_pick","pages_each_movie")
   save(list = raw_save_list, file=sprintf("%s/rawdata/%s", dict_save_location,rawdata_name))
-  source("imdb_score_clean_func.R")
+  'source("imdb_score_clean_func.R")
   source("imdb_score_term_func.R")
   
-  'K_input = 50
+  K_input = 50
   
   dictionary_name <- sprintf("dict-%d-%d-%d.Rda",max_movies_pick,pages_each_movie,K_input)
   dict_save_location <- "dictionary"
@@ -92,18 +92,13 @@ generate_raw_dict <- function(page, movie)
 }
 
 #########################################################################
-#start achieving all reviews for each score level
-pages_list = seq(30, 40, 5)
-movie_list = seq(40, 50, 10)
-for(movie_choose in movie_list)
-{
-  for(pages_choose in pages_list)
-  {
-    generate_raw_dict(page = 10, movie = 30)
-  }
-}
+#start achieving all reviews for each score level and save it into file
+
+generate_raw_dict(page = 10, movie = 30)
+
 
 ########################################################################
+#create filelist for the shinyapp to read
 unlink("dictionary/rawdata/filelist.Rda")
 filelist = list.files("dictionary/rawdata")
 save(list = "filelist", file=sprintf("dictionary/rawdata/filelist.Rda"))
