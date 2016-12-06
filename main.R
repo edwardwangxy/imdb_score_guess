@@ -109,7 +109,7 @@ source("imdb_score_term_func.R")
 
 K_input = 50
 
-dictionary_name <- sprintf("dict-%d-%d.Rda",max_movies_pick,K_input)
+dictionary_name <- sprintf("dict-%d-%d-%d.Rda",max_movies_pick,reviews_each_movie,K_input)
 dict_save_location <- "dictionary"
 
 pb3 <- txtProgressBar(min = 0, max = 9, char = "=", style = 3)

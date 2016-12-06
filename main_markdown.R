@@ -56,7 +56,7 @@ dict_save_location <- "dictionary" #save location of rawdata and term tables
 source("imdb_review_scraping_func.R")
 source("imdb_class_tree_func.R") #read classify function to create table for raw data
 #choose inputs here
-reviews_each_movie = 100
+reviews_each_movie = 10
 max_movies_pick = 10
 total_movie_count = 0
 ####
@@ -105,7 +105,7 @@ total_clean_reviews = imdb_score_clean_func(total[,-ncol(total)]) #cleanup all r
 total_table = imdb_score_term_func(total_clean_reviews, K=100) #achieve 100 terms for all reviews
 all_variables = total_table[,1] #achieve only all the terms' name into a list
 
-training_table = imdb_train_data_generate(all_variables, total, processbar = TRUE) #use the function to create a training data table
+training_table = imdb_train_data_generate(all_variables, total, processbar = FALSE) #use the function to create a training data table
 training_table$imdb_score = as.factor(training_table$imdb_score) #change numeric into factor for classification
 rawdata_name <- sprintf("rawdata-%d-%d.Rda",max_movies_pick,reviews_each_movie)
 raw_save_list = c(raw_save_list,"max_movies_pick","all_variables","training_table")
@@ -122,7 +122,7 @@ rm(list = ls()[-grep(paste(raw_save_list,collapse="|"), ls())])  #remove all the
 #' 4. Generate wordclouds for each score reviews
 #' 5. Remove all useless objects to save memory.
 #' +(For more accurate I will load a larger rawdata with 30 movies for each score and 10 pages for each movie instead of using the data grabed above)
-load("dictionary/rawdata/rawdata-20-1000.Rda") #using this function to load data directly
+load("dictionary/rawdata/rawdata-20-300.Rda") #using this function to load data directly
 source("imdb_score_clean_func.R")
 source("imdb_score_term_func.R")
 source("my_wordcloud_func.R")
@@ -130,7 +130,7 @@ K_input = 50
 
 dictionary_name <- sprintf("dict-%d-%d.Rda",max_movies_pick,K_input)
 dict_save_location <- "dictionary"
-
+par(mfrow = c(2,2))
 #pb3 <- txtProgressBar(min = 0, max = 9, char = "=", style = 3)
 objects_name_to_save = c(NULL)
 for(i in 2:9)
@@ -140,7 +140,7 @@ for(i in 2:9)
   clean_reviews = imdb_score_clean_func(get(review_name)[,-2])
   table = imdb_score_term_func(clean_reviews, K=K_input)
   assign(term_name, table)
-  myfunc.wordcloud(clean_reviews, remove_words = c(stopwords("english"),"film","movie","can","films","movies","will","scenes","just","one","like"))
+  #myfunc.wordcloud(clean_reviews, remove_words = c(stopwords("english"),"film","movie","can","films","movies","will","scenes","just","one","like"))
   objects_name_to_save = c(objects_name_to_save,review_name, term_name)
 #  setTxtProgressBar(pb3, i)
 }
@@ -273,6 +273,10 @@ rownames(training_table) = NULL
 ffit <- randomForest(imdb_score ~ .,
                      ntree=2000,
                      data=training_table)
+cat(paste("Guess using the random forest is: ", as.character(predict(ffit, test_table, type="response")), sep = ""))
 print(fit) # view results 
 importance(ffit)[1:10,]
-as.character(predict(ffit, test_table, type="response"))
+#' ***
+#' 
+#' ### The End
+#' ***

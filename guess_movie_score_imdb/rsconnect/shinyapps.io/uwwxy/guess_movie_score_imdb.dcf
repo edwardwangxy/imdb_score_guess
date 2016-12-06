@@ -1,9 +1,9 @@
 name: guess_movie_score_imdb
 account: uwwxy
 server: shinyapps.io
-appId: 138699
-bundleId: 635143
+appId: 142375
+bundleId: 637988
 url: https://uwwxy.shinyapps.io/guess_movie_score_imdb/
-when: 1480829390.25146
+when: 1481050917.79722
 asMultiple: FALSE
 asStatic: FALSE

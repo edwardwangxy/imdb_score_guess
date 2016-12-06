@@ -20,7 +20,7 @@ shinyUI(
                     min = 10, max = 80, value = 50, step = 10),
         
         sliderInput("reviews_to_guess", label = "reviews for guessing",
-                    min = 100, max = 2000, value = 1000, step = 100),
+                    min = 100, max = 200, value = 100, step = 20),
         
         sliderInput("no_tree", label = "# of trees in forest",
                     min = 100, max = 2000, value = 1000, step = 100),
@@ -45,6 +45,8 @@ shinyUI(
         tabBox(
           title = "Training dataset",
           id = "tabset1", height = "500px", width = 6,
+          tabPanel("Tree", plotOutput("class_tree")),
+          tabPanel("Pruned_Tree", plotOutput("pruned_tree")),
           tabPanel("Score_2", plotOutput("plot1_1")),
           tabPanel("Score_3", plotOutput("plot1_2")),
           tabPanel("Score_4", plotOutput("plot1_3")),
@@ -52,9 +54,7 @@ shinyUI(
           tabPanel("Score_6", plotOutput("plot1_5")),
           tabPanel("Score_7", plotOutput("plot1_6")),
           tabPanel("Score_8", plotOutput("plot1_7")),
-          tabPanel("Score_9", plotOutput("plot1_8")),
-          tabPanel("Tree", plotOutput("class_tree")),
-          tabPanel("Pruned_Tree", plotOutput("pruned_tree"))
+          tabPanel("Score_9", plotOutput("plot1_8"))
         ),
         tabBox(title = "Picked Movie",
             id = "piccloud", height = "500px", width = 6,
