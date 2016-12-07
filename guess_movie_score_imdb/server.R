@@ -225,6 +225,10 @@ shinyServer(
           predict = as.character(predict)
           predict2 = predict(pfit, test_table, type="class")
           predict2 = as.character(predict2)
+          conf.matrix <- table(training_table$imdb_score, predict(fit,type="class"))
+          accuracy_training_ori = sum(diag(conf.matrix))/sum(conf.matrix)
+          conf.matrix2 <- table(training_table$imdb_score, predict(pfit,type="class"))
+          accuracy_training_pruned = sum(diag(conf.matrix2))/sum(conf.matrix2)
           incProgress(1/6, detail = paste("random forest processing", sep=""))
           rownames(training_table) = NULL
           ffit <- randomForest(imdb_score ~ .,ntree=isolate(input$no_tree),data=training_table)
@@ -235,7 +239,7 @@ shinyServer(
        withProgress(message = "Printing out result", value = 0, {
         cat(paste("Computer Guess of movie <",search_table[s,1],">s score:\n", sep=""))
         cat("\n================Guess with Term Table==================\n")
-        cat(paste("First Guess is score ", guess_table[1,1],"\nSecond Guess is score ", guess_table[2,1]))
+        cat(paste("First Guess is score ", guess_table[1,1],"\nthe accuracy is: ", as.character(round(accuracy_training_ori*100, 2)), "%","\nSecond Guess is score ", guess_table[2,1],"\nthe accuracy is: ", as.character(round(accuracy_training_pruned*100, 2)), "%", sep = ""))
         cat("\n=======================================================\n")
         incProgress(1/4)
         cat("\n\n\n")

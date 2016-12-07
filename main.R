@@ -212,10 +212,10 @@ prp(pfit, main="Pruned Tree",
 
 
 #using the training dataset retest the trees, these function could be used to see the difference
-#conf.matrix <- table(training_table$imdb_score, predict(pfit,type="class"))
-#conf.matrix 
-#conf.matrix2 <- table(training_table$imdb_score, predict(fit,type="class"))
-#conf.matrix2
+conf.matrix <- table(training_table$imdb_score, predict(fit,type="class"))
+accuracy_training_ori = sum(diag(conf.matrix))/sum(conf.matrix)
+conf.matrix2 <- table(training_table$imdb_score, predict(pfit,type="class"))
+accuracy_training_pruned = sum(diag(conf.matrix2))/sum(conf.matrix2)
 
 predict = predict(fit, test_table, type="class")
 as.character(predict)

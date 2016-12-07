@@ -122,10 +122,10 @@ rm(list = ls()[-grep(paste(raw_save_list,collapse="|"), ls())])  #remove all the
 #' 4. Generate wordclouds for each score reviews
 #' 5. Remove all useless objects to save memory.
 #' +(For more accurate I will load a larger rawdata with 30 movies for each score and 10 pages for each movie instead of using the data grabed above)
-load("dictionary/rawdata/rawdata-20-300.Rda") #using this function to load data directly
+load("dictionary/rawdata/rawdata-30-500.Rda") #using this function to load data directly
 source("imdb_score_clean_func.R")
 source("imdb_score_term_func.R")
-source("my_wordcloud_func.R")
+
 K_input = 50
 
 dictionary_name <- sprintf("dict-%d-%d.Rda",max_movies_pick,K_input)
@@ -253,15 +253,16 @@ prp(pfit, main="Pruned Tree",
 
 
 #using the training dataset retest the trees, these function could be used to see the difference
-#conf.matrix <- table(training_table$imdb_score, predict(pfit,type="class"))
-#conf.matrix 
-#conf.matrix2 <- table(training_table$imdb_score, predict(fit,type="class"))
-#conf.matrix2
+conf.matrix <- table(training_table$imdb_score, predict(fit,type="class"))
+accuracy_training_ori = sum(diag(conf.matrix))/sum(conf.matrix)
+conf.matrix2 <- table(training_table$imdb_score, predict(pfit,type="class"))
+accuracy_training_pruned = sum(diag(conf.matrix2))/sum(conf.matrix2)
 
 predict = predict(fit, test_table, type="class")
-as.character(predict)
+cat(paste("Predict with original tree is: ",as.character(predict), "\nthe accuracy is: ", as.character(round(accuracy_training_ori*100, 2)), "%",sep = ""))
 predict2 = predict(pfit, test_table, type="class")
-as.character(predict2)
+cat(paste("Predict with original tree is: ",as.character(predict2), "\nthe accuracy is: ", as.character(round(accuracy_training_pruned*100, 2)), "%",sep = ""))
+
 #' ***
 #' 
 #' ### Try random forest analysis 
