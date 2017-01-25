@@ -10,4 +10,5 @@
 ### 2. Input the movie name you are interested into the text box and click "search" button.
 ### 3. Select the correct movie in the search result table, and pick the number of terms, number of reviews you want to grab for guessing and the number of trees inside the random forest.
 ### 4. Click "start guessing" button and wait for the system finish processing.
+# END
  
