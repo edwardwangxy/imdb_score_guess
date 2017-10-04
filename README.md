@@ -1,4 +1,6 @@
 # imdb_score_guess
+## Launch the shiny dashboard of this project:
+### https://uwwxy.shinyapps.io/guess_movie_score_imdb/
 ## Overview:
 ### 1. This project is creating an imdb web srawling tool to grabe training reviews. 
 ### 2. Using the training reviews to create term tables, classification trees and random forest.
